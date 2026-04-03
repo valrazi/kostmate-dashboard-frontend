@@ -10,6 +10,9 @@ const useAppStore = create((set) => ({
   
   // Action untuk menghapus user (Logout)
   clearUser: () => set({ user: null }),
+
+  // Action for logout that clears all user data
+  logout: () => set({ user: null, isSidebarOpen: true }),
   
   // Action untuk toggle sidebar
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),

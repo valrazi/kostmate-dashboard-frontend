@@ -8,8 +8,8 @@ import {
   BellOutlined,
   BarChartOutlined,
   SettingOutlined,
-  MenuUnfoldOutlined,
-  MenuFoldOutlined
+  RightOutlined,
+  LeftOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,7 +25,6 @@ function Sidebar() {
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/branch', icon: <BranchesOutlined />, label: 'Branch' },
     { key: '/users', icon: <UserOutlined />, label: 'Customer' },
     { key: '/payment', icon: <CreditCardOutlined />, label: 'Payment' },
     { key: '/notification', icon: <BellOutlined />, label: 'Notification' },
@@ -38,25 +37,30 @@ function Sidebar() {
     <Sider
       collapsible
       collapsed={collapsed}
-      trigger={null} // tombol toggle custom
+      trigger={null}
       width={200}
       collapsedWidth={80}
-      breakpoint="md" // responsive di medium screen
-      onBreakpoint={(broken) => setCollapsed(broken)} // auto collapse di mobile
+      breakpoint="md"
+      onBreakpoint={(broken) => setCollapsed(broken)}
       theme="light"
-      style={{ background: '#fff' }}
+      style={{ 
+        background: '#fff', 
+        position: 'relative',
+        willChange: 'width',
+        transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
       className="min-h-screen shadow-lg rounded-3xl flex flex-col justify-between"
     >
       {/* ATAS */}
       <div>
         {/* Logo */}
-        <div className="flex justify-center py-4">
+        <div className="flex justify-center py-4" style={{ willChange: 'transform' }}>
           <img
             src="/src/assets/img/Vector 679.png"
             alt="logo"
-            className={`object-contain transition-all 
-              ${collapsed ? 'w-6 md:w-10' : 'w-10'}`
-            }
+            className={`object-contain transition-all duration-200
+              ${collapsed ? 'w-6 md:w-10' : 'w-10'}`}
+            style={{ willChange: 'width' }}
           />
         </div>
 
@@ -68,19 +72,38 @@ function Sidebar() {
           items={menuItems}
           onClick={({ key }) => navigate(key)}
           style={{ background: '#fff' }}
-          inlineCollapsed={collapsed} // icon only saat collapsed
-          className="text-sm md:text-base" // ukuran huruf responsive
+          inlineCollapsed={collapsed}
+          className="text-sm md:text-base"
         />
       </div>
 
-      {/* BAWAH (TOMBOL TOGGLE) */}
-      <div className="p-3">
+      {/* TOGGLE BUTTON - BOTTOM CENTER OVERFLOW */}
+      <div className="flex justify-end px-2 pb-4" style={{ position: 'relative' }}>
         <Button
-          type="text"
           onClick={toggleSidebar}
-          className="w-full flex justify-center items-center"
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            border: 'none',
+            padding: '0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+            marginRight: '-20px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+          }}
         >
-          {collapsed ? <MenuUnfoldOutlined className="text-lg md:text-xl" /> : <MenuFoldOutlined className="text-lg md:text-xl" />}
+          {collapsed ? <RightOutlined className="text-lg text-gray-700" /> : <LeftOutlined className="text-lg text-gray-700" />}
         </Button>
       </div>
     </Sider>
