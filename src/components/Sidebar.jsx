@@ -8,6 +8,7 @@ import {
   BellOutlined,
   BarChartOutlined,
   SettingOutlined,
+  LogoutOutlined,
   RightOutlined,
   LeftOutlined
 } from '@ant-design/icons';
@@ -23,12 +24,22 @@ function Sidebar() {
     setCollapsed(!collapsed);
   };
 
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/branch/room', icon: <BranchesOutlined />, label: 'Branch' },
     { key: '/users', icon: <UserOutlined />, label: 'Customer' },
     { key: '/payment', icon: <CreditCardOutlined />, label: 'Payment' },
     { key: '/notification', icon: <BellOutlined />, label: 'Notification' },
-    { type: 'divider' },
+    {
+      type: 'group',
+      label: <div className="px-4">
+        <div className="border-t border-gray-300"></div>
+      </div>
+    },
     { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
     { key: '/account', icon: <SettingOutlined />, label: 'Account' },
   ];
@@ -43,68 +54,92 @@ function Sidebar() {
       breakpoint="md"
       onBreakpoint={(broken) => setCollapsed(broken)}
       theme="light"
-      style={{ 
-        background: '#fff', 
-        position: 'relative',
-        willChange: 'width',
-        transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}
-      className="min-h-screen shadow-lg rounded-3xl flex flex-col justify-between"
+      className="min-h-screen shadow-lg rounded-3xl"
+      style={{ background: '#fff' }}
     >
-      {/* ATAS */}
-      <div>
-        {/* Logo */}
-        <div className="flex justify-center py-4" style={{ willChange: 'transform' }}>
-          <img
-            src="/src/assets/img/Vector 679.png"
-            alt="logo"
-            className={`object-contain transition-all duration-200
-              ${collapsed ? 'w-6 md:w-10' : 'w-10'}`}
-            style={{ willChange: 'width' }}
+      <div className="flex flex-col h-full">
+
+        {/* ATAS */}
+        <div>
+          {/* Logo */}
+          <div className="flex justify-center py-4">
+            <img
+              src="/src/assets/img/logokostmate.png"
+              alt="logo"
+              className={`object-contain transition-all duration-200
+                ${collapsed ? 'w-6 md:w-10' : 'w-12'}`}
+            />
+          </div>
+
+          {/* Menu */}
+          <Menu
+            theme="light"
+            mode="inline"
+            defaultSelectedKeys={['/branch/room']}
+            items={menuItems}
+            onClick={({ key }) => navigate(key)}
+            inlineCollapsed={collapsed}
           />
         </div>
 
-        {/* Menu */}
-        <Menu
-          theme="light"
-          mode="inline"
-          defaultSelectedKeys={['/']}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          style={{ background: '#fff' }}
-          inlineCollapsed={collapsed}
-          className="text-sm md:text-base"
-        />
-      </div>
+        {/* 🔽 DORONG KE BAWAH */}
+        <div className="mt-auto flex flex-col gap-2 px-2 pb-4">
 
-      {/* TOGGLE BUTTON - BOTTOM CENTER OVERFLOW */}
-      <div className="flex justify-end px-2 pb-4" style={{ position: 'relative' }}>
-        <Button
-          onClick={toggleSidebar}
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: '#ffffff',
-            border: 'none',
-            padding: '0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-            marginRight: '-20px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-          }}
-        >
-          {collapsed ? <RightOutlined className="text-lg text-gray-700" /> : <LeftOutlined className="text-lg text-gray-700" />}
-        </Button>
+          {/* TOGGLE */}
+          <div className="flex justify-end">
+            <Button
+              onClick={toggleSidebar}
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                backgroundColor: '#ffffff',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                marginRight: '-15px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+              }}
+            >
+              {collapsed
+                ? <RightOutlined className="text-sm text-gray-700" />
+                : <LeftOutlined className="text-sm text-gray-700" />
+              }
+            </Button>
+          </div>
+
+          {/* 🔴 LOGOUT PALING BAWAH */}
+          <Menu
+            mode="inline"
+            selectable={false}
+            inlineCollapsed={collapsed}
+            items={[
+              {
+                key: 'logout',
+                icon: <LogoutOutlined />,
+                label: 'Logout',
+                onClick: handleLogout,
+                className: `
+                  !bg-red-500 
+                  hover:!bg-red-600 
+                  !text-white 
+                  hover:!text-white 
+                  rounded-lg
+                `
+              }
+            ]}
+          />
+
+        </div>
       </div>
     </Sider>
   );

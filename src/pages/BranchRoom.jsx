@@ -101,7 +101,10 @@ function BranchRoom() {
             prefix={<SearchOutlined />}
             className="flex-1"
           />
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/branch')}
+          >
             Kembali
           </Button>
         </div>

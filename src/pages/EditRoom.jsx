@@ -2,21 +2,26 @@ import { Button, Input, Upload, Select } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import { useState } from "react";
 
 function EditRoom() {
   const navigate = useNavigate();
   const username = "Manto Ariyansyah";
 
+  // ✅ STATE MODAL
+  const [openModal, setOpenModal] = useState(false);
+
   return (
     <div className="bg-gray-100 flex flex-col">
-      
+
       {/* Header */}
       <Header title="Room" username={username} />
 
       {/* Konten */}
       <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4">
         <div className="w-full md:w-3/5 lg:w-1/2 bg-white shadow-lg rounded-xl p-4 md:p-6">
-          
+
           {/* Header Card */}
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-2">
             <h2 className="text-md md:text-lg font-semibold">
@@ -31,11 +36,10 @@ function EditRoom() {
 
           {/* Form */}
           <form className="flex flex-col md:flex-row gap-6">
-            
+
             {/* Kiri */}
             <div className="flex-1 flex flex-col gap-4">
-              
-              {/* No Room */}
+
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   No Room
@@ -43,7 +47,6 @@ function EditRoom() {
                 <Input defaultValue="A1" placeholder="Masukan No Room" />
               </div>
 
-              {/* Gender */}
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   Gender
@@ -66,8 +69,7 @@ function EditRoom() {
 
             {/* Kanan */}
             <div className="flex-1 flex flex-col gap-4">
-              
-              {/* Foto Room */}
+
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   Foto Room
@@ -90,11 +92,13 @@ function EditRoom() {
 
           {/* Tombol */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:justify-end">
+
+            {/* ✅ TOMBOL HAPUS → BUKA MODAL */}
             <Button
-              className="w-full md:w-auto"
-              onClick={() => navigate(-1)}
+              className="w-full md:w-auto !bg-red-500 hover:!bg-red-600 !text-white !border-none"
+              onClick={() => setOpenModal(true)}
             >
-              Batal
+              Hapus
             </Button>
 
             <Button
@@ -108,6 +112,20 @@ function EditRoom() {
 
         </div>
       </div>
+
+      {/* ✅ MODAL DELETE */}
+      <ConfirmDeleteModal
+        open={openModal}
+        onCancel={() => setOpenModal(false)}
+        onConfirm={() => {
+          setOpenModal(false);
+
+          // 👉 nanti ganti dengan API delete
+          console.log("Room dihapus");
+
+          navigate("/branch/room");
+        }}
+      />
     </div>
   );
 }

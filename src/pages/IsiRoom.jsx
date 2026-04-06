@@ -2,14 +2,25 @@ import { Button, Input, Select } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CloseOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import { useState } from "react";
 
 function IsiRoom() {
   const navigate = useNavigate();
   const username = "Manto Ariyansyah";
 
+  // ✅ STATE MODAL
+  const [openModal, setOpenModal] = useState(false);
+
+  // ✅ generate tanggal 1 - 31
+  const tanggalOptions = Array.from({ length: 31 }, (_, i) => ({
+    value: i + 1,
+    label: `${i + 1}`,
+  }));
+
   return (
     <div className="bg-gray-100 flex flex-col">
-      
+
       {/* Header */}
       <Header title="Room" username={username} />
 
@@ -78,11 +89,20 @@ function IsiRoom() {
                 <Input type="date" className="w-full" />
               </div>
 
+              {/* ✅ TANGGAL NOTIFIKASI (DROPDOWN + SEARCH) */}
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   Tanggal Notifikasi
                 </label>
-                <Input type="date" className="w-full" />
+                <Select
+                  showSearch
+                  placeholder="Pilih Tanggal Notifikasi"
+                  className="w-full"
+                  options={tanggalOptions}
+                  filterOption={(input, option) =>
+                    option.label.toLowerCase().includes(input.toLowerCase())
+                  }
+                />
               </div>
 
               <div>
@@ -113,11 +133,12 @@ function IsiRoom() {
 
           {/* Tombol */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:justify-end">
+            {/* ✅ TOMBOL HAPUS → BUKA MODAL */}
             <Button
-              className="w-full md:w-auto"
-              onClick={() => navigate(-1)}
+              className="w-full md:w-auto !bg-red-500 hover:!bg-red-600 !text-white !border-none"
+              onClick={() => setOpenModal(true)}
             >
-              Batal
+              Hapus
             </Button>
 
             <Button
@@ -128,8 +149,20 @@ function IsiRoom() {
               Simpan
             </Button>
           </div>
-
         </div>
+        {/* ✅ MODAL DELETE */}
+        <ConfirmDeleteModal
+          open={openModal}
+          onCancel={() => setOpenModal(false)}
+          onConfirm={() => {
+            setOpenModal(false);
+
+            // 👉 nanti ganti dengan API delete
+            console.log("Room dihapus");
+
+            navigate("/branch/room");
+          }}
+        />
       </div>
     </div>
   );
