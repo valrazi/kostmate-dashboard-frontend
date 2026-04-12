@@ -43,13 +43,13 @@ function AddRoom() {
                 <Input placeholder="Masukan No Room" />
               </div>
 
-              {/* Gender */}
+              {/* Jenis Kelamin */}
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Gender
+                  Jenis Kelamin
                 </label>
                 <Select
-                  placeholder="Pilih Gender"
+                  placeholder="Pilih Jenis Kelamin"
                   className="w-full"
                 >
                   <Select.Option value="laki">

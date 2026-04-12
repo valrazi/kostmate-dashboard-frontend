@@ -3,34 +3,51 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Button, Table, Tag } from 'antd';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import Header from '../components/Header';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { useState } from 'react';
 
 function Users() {
   const username = "Manto Ariyansyah";
   const navigate = useNavigate();
 
-  const [data] = useState([
-    { key: 1, name: "Andi Saputra", gender: "Laki-laki", whatsapp: "08123456789", emergency: "08198765432", berkas: "Lengkap" },
-    { key: 2, name: "Siti Aminah", gender: "Perempuan", whatsapp: "08122334455", emergency: "08155667788", berkas: "Belum Lengkap" },
-    { key: 3, name: "Budi Santoso", gender: "Laki-laki", whatsapp: "08134567890", emergency: "08198765431", berkas: "Lengkap" },
-    { key: 4, name: "Dewi Lestari", gender: "Perempuan", whatsapp: "08133445566", emergency: "08155667789", berkas: "Belum Lengkap" },
-    { key: 5, name: "Eko Prasetyo", gender: "Laki-laki", whatsapp: "08145678901", emergency: "08198765433", berkas: "Lengkap" },
-    { key: 6, name: "Fitria Rahma", gender: "Perempuan", whatsapp: "08144556677", emergency: "08155667790", berkas: "Belum Lengkap" },
-    { key: 7, name: "Gilang Ramadhan", gender: "Laki-laki", whatsapp: "08156789012", emergency: "08198765434", berkas: "Lengkap" },
-    { key: 8, name: "Hani Kusuma", gender: "Perempuan", whatsapp: "08155667788", emergency: "08155667791", berkas: "Belum Lengkap" },
-    { key: 9, name: "Irwan Maulana", gender: "Laki-laki", whatsapp: "08167890123", emergency: "08198765435", berkas: "Lengkap" },
-    { key: 10, name: "Julianti Sari", gender: "Perempuan", whatsapp: "08166778899", emergency: "08155667792", berkas: "Belum Lengkap" },
+  const [data, setData] = useState([
+    { key: 1, room: "1", name: "Andi Saputra", gender: "Laki-laki", whatsapp: "08123456789", emergency: "08198765432", berkas: "Lengkap" },
+    { key: 2, room: "2", name: "Siti Aminah", gender: "Perempuan", whatsapp: "08122334455", emergency: "08155667788", berkas: "Belum Lengkap" },
+    { key: 3, room: "3", name: "Budi Santoso", gender: "Laki-laki", whatsapp: "08134567890", emergency: "08198765431", berkas: "Lengkap" },
+    { key: 4, room: "4", name: "Dewi Lestari", gender: "Perempuan", whatsapp: "08133445566", emergency: "08155667789", berkas: "Belum Lengkap" },
   ]);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleDeleteClick = (record) => {
+    setSelectedUser(record);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setData(prev => prev.filter(item => item.key !== selectedUser.key));
+    setIsModalOpen(false);
+    setSelectedUser(null);
+  };
+
   const columns = [
+    // ✅ NO ROOM (SEBELUM NAMA)
     {
-      title: "Nama Penghuni",
+      title: "No",
+      dataIndex: "room",
+      key: "room",
+      align: "left",
+    },
+
+    {
+      title: "Nama Customer",
       dataIndex: "name",
       key: "name",
       align: "left",
     },
     {
-      title: "Gender",
+      title: "Jenis Kelamin",
       dataIndex: "gender",
       key: "gender",
       align: "center",
@@ -63,27 +80,42 @@ function Users() {
       key: "aksi",
       align: "center",
       render: (_, record) => (
-        <Button
-          size="small"
-          type="primary"
-          onClick={() => navigate("/cust/edit", { state: { record } })}
-        >
-          Edit
-        </Button>
+        <div className="flex justify-center gap-2">
+
+          {/* HAPUS */}
+          <Button
+            size="small"
+            className="!border-red-500 !text-red-500 hover:!text-white hover:!bg-red-500 hover:!border-red-500"
+            onClick={() => handleDeleteClick(record)}
+          >
+            Hapus
+          </Button>
+
+          {/* EDIT */}
+          <Button
+            size="small"
+            className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
+            onClick={() => navigate("/cust/edit", { state: { record } })}
+          >
+            Edit
+          </Button>
+
+        </div>
       ),
     },
   ];
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div 
+
+      {/* HEADER */}
+      <div
         className="sticky z-50 bg-gray-100 -mt-6 -mx-6 px-6 pt-6 pb-4 mb-2"
         style={{ top: '0px' }}
       >
         <Header title="Customer" username={username} />
 
-        {/* SEARCH */}
-        <div className="w-full md:w-80 max-w-md mt-4">
+        <div className="w-full md:w-96 max-w-md mt-4">
           <Input placeholder="Cari Nama Customer" prefix={<SearchOutlined />} />
         </div>
       </div>
@@ -93,12 +125,7 @@ function Users() {
 
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
-          <div>
-            <h2 className="text-md md:text-lg font-semibold">Customer List</h2>
-            <p className="text-xs md:text-sm text-gray-500">
-              Our most popular plan for small teams.
-            </p>
-          </div>
+          <h2 className="text-md md:text-lg font-semibold">Customer List</h2>
 
           <div className='pr-6'>
             <Button
@@ -111,7 +138,6 @@ function Users() {
           </div>
         </div>
 
-        {/* GARIS */}
         <div className="border-t border-gray-200 mb-2"></div>
 
         {/* TABLE */}
@@ -126,7 +152,17 @@ function Users() {
             scroll={{ x: 700 }}
           />
         </div>
+
       </div>
+
+      {/* MODAL */}
+      <ConfirmDeleteModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Anda Yakin Ingin Hapus Customer?"
+        description="Customer yang kamu hapus tidak dapat dikembalikan. Apakah kamu yakin ingin melanjutkan?"
+      />
     </div>
   );
 }

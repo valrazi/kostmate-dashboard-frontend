@@ -40,7 +40,7 @@ function Dashboard() {
         style={{ top: '0px' }}
       >
         {/* HEADER */}
-        <Header title="Branch" username={username} />
+        <Header title="Dashboard" username={username} />
 
       </div>
 

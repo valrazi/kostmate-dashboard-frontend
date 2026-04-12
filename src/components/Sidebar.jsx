@@ -9,6 +9,8 @@ import {
   BarChartOutlined,
   SettingOutlined,
   LogoutOutlined,
+  HomeOutlined,
+  RestOutlined,
   RightOutlined,
   LeftOutlined
 } from '@ant-design/icons';
@@ -30,17 +32,17 @@ function Sidebar() {
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/branch/room', icon: <BranchesOutlined />, label: 'Branch' },
     { key: '/users', icon: <UserOutlined />, label: 'Customer' },
+    { key: '/branch/room', icon: <HomeOutlined />, label: 'Room' },
     { key: '/payment', icon: <CreditCardOutlined />, label: 'Payment' },
-    { key: '/notification', icon: <BellOutlined />, label: 'Notification' },
+    { key: '/notifikasi', icon: <BellOutlined />, label: 'Notification' },
     {
       type: 'group',
       label: <div className="px-4">
         <div className="border-t border-gray-300"></div>
       </div>
     },
-    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
+    { key: '/report', icon: <BarChartOutlined />, label: 'Reports' },
     { key: '/account', icon: <SettingOutlined />, label: 'Account' },
   ];
 
@@ -75,7 +77,7 @@ function Sidebar() {
           <Menu
             theme="light"
             mode="inline"
-            defaultSelectedKeys={['/branch/room']}
+            defaultSelectedKeys={['/']}
             items={menuItems}
             onClick={({ key }) => navigate(key)}
             inlineCollapsed={collapsed}
@@ -117,27 +119,7 @@ function Sidebar() {
             </Button>
           </div>
 
-          {/* 🔴 LOGOUT PALING BAWAH */}
-          <Menu
-            mode="inline"
-            selectable={false}
-            inlineCollapsed={collapsed}
-            items={[
-              {
-                key: 'logout',
-                icon: <LogoutOutlined />,
-                label: 'Logout',
-                onClick: handleLogout,
-                className: `
-                  !bg-red-500 
-                  hover:!bg-red-600 
-                  !text-white 
-                  hover:!text-white 
-                  rounded-lg
-                `
-              }
-            ]}
-          />
+          
 
         </div>
       </div>

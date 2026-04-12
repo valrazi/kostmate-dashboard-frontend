@@ -18,6 +18,8 @@ import EditPayment from './pages/EditPayment';
 import Account from './pages/Account';
 import IsiRoom from './pages/IsiRoom';
 import UploadPayment from './pages/UploadPayment'
+import Notifikasi from './pages/Notifikasi';
+import Report from './pages/Report';
 
 const { Content } = Layout;
 
@@ -66,6 +68,8 @@ function App() {
               <Route path="/room/edit" element={<ProtectedRoute element={<EditRoom />} pathname="/room/edit" />} />
               <Route path="/room/isi" element={<ProtectedRoute element={<IsiRoom />} pathname="/room/isi" />} />
               <Route path="/payment/upload" element={<ProtectedRoute element={<UploadPayment />} pathname="/payment/upload" />} />
+              <Route path="/notifikasi" element={<ProtectedRoute element={<Notifikasi />} pathname="/notifikasi" />} />
+              <Route path="/report" element={<ProtectedRoute element={<Report />} pathname="/report" />} />
             </Routes>
           </Content>
         </Layout>

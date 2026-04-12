@@ -9,9 +9,10 @@ function UploadPayment() {
 
   return (
     <div className="bg-gray-100 flex flex-col">
-      
-      {/* Header */}
+      {/* HEADER STICKY */}
+    <div className="sticky top-0 z-50 bg-gray-100 px-6 pt-6 pb-4">
       <Header title="Payment" username={username} />
+    </div>
 
       {/* Konten */}
       <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4">
@@ -44,7 +45,7 @@ function UploadPayment() {
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Pilih Penghuni
+                  Nama Customer
                 </label>
                 <Input value="Manto Ariyansyah" disabled className="w-full" />
               </div>
@@ -56,11 +57,6 @@ function UploadPayment() {
                 <Input value="A1" disabled className="w-full" />
               </div>
 
-            </div>
-
-            {/* Kanan */}
-            <div className="flex-1 flex flex-col gap-4">
-              
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   No WhatsApp
@@ -68,6 +64,33 @@ function UploadPayment() {
                 <Input value="0878787878" disabled className="w-full" />
               </div>
 
+            </div>
+
+            {/* Kanan */}
+            <div className="flex-1 flex flex-col gap-4">
+              
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1">
+                  Sewa
+                </label>
+                <Input value="Bulanan" disabled className="w-full">
+                </Input>
+              </div>
+
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1">
+                  Pembayaran Ke-
+                </label>
+                <Input value="Bulan 5" disabled className="w-full" />
+              </div>
+
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1">
+                  Biaya Room
+                </label>
+                <Input value="Rp. 1.000.000" disabled className="w-full" />
+              </div>
+              
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
                   Foto Bukti Transfer

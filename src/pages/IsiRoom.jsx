@@ -4,10 +4,13 @@ import { CloseOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useState } from "react";
+import AddCustomerModal from "../components/AddCustomerModal";
 
 function IsiRoom() {
   const navigate = useNavigate();
   const username = "Manto Ariyansyah";
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ✅ STATE MODAL
   const [openModal, setOpenModal] = useState(false);
@@ -50,19 +53,31 @@ function IsiRoom() {
                 <label className="text-xs md:text-sm font-medium mb-1">
                   No Room
                 </label>
-                <Input placeholder="Masukan No Room" />
+                <Input value="A1" disabled />
               </div>
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Nama Penghuni
+                  Nama Customer
                 </label>
-                <Input placeholder="Masukan Nama Penghuni" />
+                <Select placeholder="Pilih Customer" className="w-full">
+                  <Select.Option value="laki">Bayu</Select.Option>
+                  <Select.Option value="perempuan">Ival</Select.Option>
+                </Select>
+
+                {/* ✅ BUTTON TAMBAH */}
+                <Button
+                  type="link"
+                  className="!p-0 mt-1 text-blue-500"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  + Tambah Customer
+                </Button>
               </div>
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Gender
+                  Jenis Kelamin
                 </label>
                 <Select placeholder="Pilih Gender" className="w-full">
                   <Select.Option value="laki">Laki-laki</Select.Option>
@@ -84,15 +99,19 @@ function IsiRoom() {
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Tanggal Keluar
+                  Sewa
                 </label>
-                <Input type="date" className="w-full" />
+                <Select placeholder="Masukan Sewa" className="w-full">
+                  <Select.Option value="laki">Mingguan</Select.Option>
+                  <Select.Option value="perempuan">Bulanan</Select.Option>
+                  <Select.Option value="perempuan">Tahunan</Select.Option>
+                </Select>
               </div>
 
               {/* ✅ TANGGAL NOTIFIKASI (DROPDOWN + SEARCH) */}
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Tanggal Notifikasi
+                  H- Notifikasi
                 </label>
                 <Select
                   showSearch
@@ -119,10 +138,10 @@ function IsiRoom() {
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Jumlah Penghuni / Catatan
+                  Jumlah Customer / Catatan
                 </label>
                 <Input.TextArea
-                  placeholder="Masukan Jumlah Penghuni / Catatan"
+                  placeholder="Masukan Jumlah Customer / Catatan"
                   rows={2}
                 />
               </div>
@@ -153,6 +172,8 @@ function IsiRoom() {
         {/* ✅ MODAL DELETE */}
         <ConfirmDeleteModal
           open={openModal}
+          title="Anda Yakin Ingin Hapus Isi Room?"
+          description="Isi Room yang kamu hapus tidak dapat dikembalikan. Apakah kamu yakin ingin melanjutkan?"
           onCancel={() => setOpenModal(false)}
           onConfirm={() => {
             setOpenModal(false);
@@ -164,6 +185,11 @@ function IsiRoom() {
           }}
         />
       </div>
+
+      <AddCustomerModal
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

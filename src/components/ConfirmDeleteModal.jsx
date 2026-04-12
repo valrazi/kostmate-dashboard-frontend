@@ -2,9 +2,15 @@ import { Modal, Button, Grid } from "antd";
 
 const { useBreakpoint } = Grid;
 
-function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
+function ConfirmDeleteModal({ 
+  open, 
+  onCancel, 
+  onConfirm,
+  title = "Anda Yakin Ingin Hapus Room?",
+  description = "Data yang kamu hapus tidak dapat dikembalikan. Apakah kamu yakin ingin melanjutkan?"
+}) {
   const screens = useBreakpoint();
-  const isMobile = !screens.md; // mobile jika < md
+  const isMobile = !screens.md;
 
   return (
     <Modal
@@ -12,7 +18,7 @@ function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
       onCancel={onCancel}
       footer={null}
       centered={false}
-      width={isMobile ? "90%" : 400} // ✅ mobile full, desktop tetap
+      width={isMobile ? "90%" : 400}
       style={{
         top: isMobile ? 80 : 100,
         left: isMobile ? 0 : 100
@@ -21,27 +27,26 @@ function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
         content: {
           borderRadius: 0,
           padding: isMobile ? "14px" : "16px",
-          height: isMobile ? "auto" : "220px", // ✅ mobile fleksibel
+          height: isMobile ? "auto" : "220px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between"
         }
       }}
     >
-      {/* Header */}
+      {/* HEADER */}
       <div className="border-b pb-2 mb-3 border-gray-200">
         <h2 className="text-base md:text-lg font-semibold">
-          Anda Yakin Ingin Hapus Room?
+          {title}
         </h2>
       </div>
 
-      {/* Deskripsi */}
+      {/* DESKRIPSI */}
       <p className="text-gray-500 text-xs md:text-sm flex-1">
-        Room yang kamu hapus tidak dapat dikembalikan. 
-        Apakah kamu yakin ingin melanjutkan?
+        {description}
       </p>
 
-      {/* Tombol */}
+      {/* BUTTON */}
       <div className="flex justify-end gap-2 mt-4">
         <Button size={isMobile ? "small" : "middle"} onClick={onCancel}>
           Batal

@@ -39,16 +39,16 @@ function AddCust() {
               
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Nama Penghuni
+                  Nama Customer
                 </label>
-                <Input placeholder="Masukan Nama Penghuni" />
+                <Input placeholder="Masukan Nama Customer" />
               </div>
 
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Gender
+                  Jenis Kelamin
                 </label>
-                <Select placeholder="Pilih Gender" className="w-full">
+                <Select placeholder="Pilih Jenis Kelamin" className="w-full">
                   <Option value="L">Laki-laki</Option>
                   <Option value="P">Perempuan</Option>
                 </Select>

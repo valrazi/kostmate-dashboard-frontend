@@ -39,7 +39,7 @@ function EditCust() {
               
               <div>
                 <label className="text-xs md:text-sm font-medium mb-1">
-                  Nama Penghuni
+                  Nama Customer
                 </label>
                 <Input value="Manto Ariyansyah" />
               </div>

@@ -44,14 +44,12 @@ function Login() {
           <div>
             <div className="flex justify-center items-center mb-4">
                 <Image
-                    src="/src/assets/img/Vector 679.png"
+                    src="/src/assets/img/logo-kostmate.png"
                     alt="logo"
-                    width={64}
+                    width={350}
                     preview={false}
                 />
             </div>
-            <Title level={2} className="mb-0">Kostmate</Title>
-            <Text type="secondary">Login to your account</Text>
           </div>
 
           {/* Form */}
@@ -72,7 +70,7 @@ function Login() {
             >
               <Input
                 prefix={<MailOutlined />}
-                placeholder="Enter your email"
+                placeholder="Masukan Email Anda"
                 size="large"
               />
             </Form.Item>
@@ -88,7 +86,7 @@ function Login() {
             >
               <Input.Password
                 prefix={<LockOutlined />}
-                placeholder="Enter your password"
+                placeholder="Masukan Password"
                 size="large"
               />
             </Form.Item>
@@ -109,7 +107,7 @@ function Login() {
 
           {/* Footer */}
           <Text type="secondary" style={{ fontSize: '12px' }}>
-            © 2024 Kostmate. All rights reserved.
+            © 2026 KostMate. All Rights Reserved.
           </Text>
         </Space>
       </Card>
