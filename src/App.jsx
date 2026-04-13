@@ -9,8 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Branch from './pages/Branch';
 import BranchRoom from './pages/BranchRoom';
-import EditBranchRoom from './pages/EditBranchRoom';
-import AddBranch from './pages/AddBranch';
+// import EditBranchRoom from './pages/EditBranchRoom';
+// import AddBranch from './pages/AddBranch';
 import AddCust from './pages/AddCust';
 import EditCust from './pages/EditCust';
 import Payment from './pages/Payment';
@@ -56,9 +56,9 @@ function App() {
               <Route path="/" element={<ProtectedRoute element={<Dashboard />} pathname="/" />} />
               <Route path="/branch" element={<ProtectedRoute element={<Branch />} pathname="/branch" />} />
               <Route path="/branch/room" element={<ProtectedRoute element={<BranchRoom />} pathname="/branch/room" />} />
-              <Route path="/branch/room/edit" element={<ProtectedRoute element={<EditBranchRoom />} pathname="/branch/room/edit" />} />
+              {/* <Route path="/branch/room/edit" element={<ProtectedRoute element={<EditBranchRoom />} pathname="/branch/room/edit" />} /> */}
               <Route path="/users" element={<ProtectedRoute element={<Users />} pathname="/users" />} />
-              <Route path="/branch/add" element={<ProtectedRoute element={<AddBranch />} pathname="/branch/add" />} />
+              {/* <Route path="/branch/add" element={<ProtectedRoute element={<AddBranch />} pathname="/branch/add" />} /> */}
               <Route path="/cust/add" element={<ProtectedRoute element={<AddCust />} pathname="/cust/add" />} />
               <Route path="/cust/edit" element={<ProtectedRoute element={<EditCust />} pathname="/cust/edit" />} />
               <Route path="/payment" element={<ProtectedRoute element={<Payment />} pathname="/payment" />} />
