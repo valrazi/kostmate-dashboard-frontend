@@ -1,34 +1,79 @@
 // src/pages/Users.jsx
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Table, Tag } from 'antd';
+import { Input, Button, Table, Tag, message } from 'antd';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
-import { useState } from 'react';
+import useAppStore from '../store/useAppStore';
+import api from '../services/api';
 
 function Users() {
-  const username = "Manto Ariyansyah";
   const navigate = useNavigate();
-
-  const [data, setData] = useState([
-    { key: 1, room: "1", name: "Andi Saputra", gender: "Laki-laki", whatsapp: "08123456789", emergency: "08198765432", berkas: "Lengkap" },
-    { key: 2, room: "2", name: "Siti Aminah", gender: "Perempuan", whatsapp: "08122334455", emergency: "08155667788", berkas: "Belum Lengkap" },
-    { key: 3, room: "3", name: "Budi Santoso", gender: "Laki-laki", whatsapp: "08134567890", emergency: "08198765431", berkas: "Lengkap" },
-    { key: 4, room: "4", name: "Dewi Lestari", gender: "Perempuan", whatsapp: "08133445566", emergency: "08155667789", berkas: "Belum Lengkap" },
-  ]);
+  const user = useAppStore((state) => state.user);
+  const selectedBranch = useAppStore((state) => state.selectedBranch);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  // Debounce logic
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchText);
+    }, 500); // 500ms debounce
+    return () => clearTimeout(handler);
+  }, [searchText]);
+
+  useEffect(() => {
+    if (!selectedBranch) {
+      navigate('/branch');
+    } else {
+      fetchCustomers();
+    }
+  }, [selectedBranch, debouncedSearch]);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams({ branch_id: selectedBranch.id });
+      if (debouncedSearch) {
+        queryParams.append("search", debouncedSearch);
+      }
+      const res = await api.get(`/customers?${queryParams.toString()}`);
+      setData(res.data.data ? res.data.data : res.data);
+    } catch (error) {
+      console.error(error);
+      message.error("Gagal mengambil data customer");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteClick = (record) => {
     setSelectedUser(record);
     setIsModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    setData(prev => prev.filter(item => item.key !== selectedUser.key));
-    setIsModalOpen(false);
-    setSelectedUser(null);
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    try {
+      await api.delete(`/customers/${selectedUser.id}`);
+      message.success("Customer berhasil dihapus");
+      fetchCustomers();
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error.response?.data?.meta?.error?.message
+        || error.response?.data?.message
+        || "Gagal menghapus branch";
+      message.error(errorMessage);
+    } finally {
+      setIsModalOpen(false);
+      setSelectedUser(null);
+    }
   };
 
   const columns = [
@@ -51,27 +96,28 @@ function Users() {
       dataIndex: "gender",
       key: "gender",
       align: "center",
+      render: (text) => text === 'male' ? 'Laki-laki' : text === 'female' ? 'Perempuan' : text
     },
     {
       title: "No WhatsApp",
-      dataIndex: "whatsapp",
-      key: "whatsapp",
+      dataIndex: "whatsappNumber",
+      key: "whatsappNumber",
       align: "center",
     },
     {
       title: "No Darurat",
-      dataIndex: "emergency",
-      key: "emergency",
+      dataIndex: "emergencyPhoneNumber",
+      key: "emergencyPhoneNumber",
       align: "center",
     },
     {
       title: "Berkas",
-      dataIndex: "berkas",
-      key: "berkas",
+      dataIndex: "identityUrl",
+      key: "identityUrl",
       align: "center",
-      render: (text) => (
-        <Tag color={text === "Lengkap" ? "green" : "red"}>
-          {text}
+      render: (url) => (
+        <Tag color={url ? "green" : "red"}>
+          {url ? "Lengkap" : "Belum Lengkap"}
         </Tag>
       ),
     },
@@ -113,10 +159,15 @@ function Users() {
         className="sticky z-50 bg-gray-100 -mt-6 -mx-6 px-6 pt-6 pb-4 mb-2"
         style={{ top: '0px' }}
       >
-        <Header title="Customer" username={username} />
+        <Header title="Customer" username={user?.ownerProfile?.name || user?.email} />
 
         <div className="w-full md:w-96 max-w-md mt-4">
-          <Input placeholder="Cari Nama Customer" prefix={<SearchOutlined />} />
+          <Input 
+            placeholder="Cari Nama Customer" 
+            prefix={<SearchOutlined />} 
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
         </div>
       </div>
 
@@ -145,6 +196,8 @@ function Users() {
           <Table
             columns={columns}
             dataSource={data}
+            rowKey="id"
+            loading={loading}
             pagination={false}
             size="middle"
             bordered={false}

@@ -1,33 +1,39 @@
-import { Form, Input, Button, Card, Typography, Space, Image } from 'antd';
+import { Form, Input, Button, Card, Typography, Space, Image, message } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import useAppStore from '../store/useAppStore';
+import api from '../services/api';
 
 const { Title, Text } = Typography;
 
 function Login() {
   const navigate = useNavigate();
-  const setUser = useAppStore((state) => state.setUser);
+  const setAuth = useAppStore((state) => state.setAuth);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      // Simulate login delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Set user in store with email from form
-      setUser({
+      // Call the API
+      const response = await api.post('/auth/login', {
         email: values.email,
-        loginTime: new Date(),
+        password: values.password
       });
       
+      // Extract data (backend wraps in data property)
+      const { accessToken, refreshToken, user } = response.data;
+
+      // Set auth in store
+      setAuth(user, accessToken, refreshToken);
+      
       // Navigate to branch on successful login
+      message.success('Login berhasil!');
       navigate('/branch');
     } catch (error) {
       console.error('Login failed:', error);
+      message.error(error.response?.data?.message || 'Login gagal, periksa email dan password Anda!');
     } finally {
       setLoading(false);
     }
