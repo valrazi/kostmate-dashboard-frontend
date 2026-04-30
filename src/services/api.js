@@ -3,7 +3,7 @@ import useAppStore from '../store/useAppStore';
 
 // Konfigurasi default axios
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000', // Ubah sesuai URL API Anda
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001', // Ubah sesuai URL API Anda
   timeout: 10000, // Timeout request (opsional)
   headers: {
     'Content-Type': 'application/json',

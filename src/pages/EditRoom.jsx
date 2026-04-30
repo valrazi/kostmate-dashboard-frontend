@@ -1,28 +1,86 @@
-import { Button, Input, Upload, Select } from "antd";
-import { useNavigate } from "react-router-dom";
-import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
-import Header from "../components/Header";
+import { Button, Input, Select, Form, message } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
+import { CloseOutlined } from "@ant-design/icons";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useAppStore from "../store/useAppStore";
+import api from "../services/api";
+import Header from "../components/Header";
 
 function EditRoom() {
   const navigate = useNavigate();
-  const username = "Manto Ariyansyah";
+  const location = useLocation();
+  const record = location.state?.record;
 
-  // ✅ STATE MODAL
+  const user = useAppStore((state) => state.user);
+  const selectedBranch = useAppStore((state) => state.selectedBranch);
+
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
+  useEffect(() => {
+    if (!selectedBranch || !record) {
+      navigate("/branch/room");
+      return;
+    }
+
+    if (record.status === "Terisi" || record.status === "filled") {
+      message.error("Kamar sedang ditempati, tidak dapat diubah.");
+      navigate("/branch/room");
+      return;
+    }
+
+    form.setFieldsValue({
+      roomNumber: record.roomNumber,
+      gender: record.gender || "mixed",
+      status: record.status === "Terisi" ? "filled" : record.status === "Maintenance" ? "maintenance" : "available",
+    });
+  }, [record, selectedBranch, form, navigate]);
+
+  const handleSubmit = async (values) => {
+    try {
+      setLoading(true);
+      const payload = {
+        ...values,
+        branchId: selectedBranch.id,
+      };
+
+      await api.patch(`/rooms/${record.id}`, payload);
+      message.success("Room berhasil diperbarui");
+      navigate("/branch/room");
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error.response?.data?.meta?.error?.message 
+        || error.response?.data?.message 
+        || "Gagal memperbarui room";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setOpenModal(false);
+      await api.delete(`/rooms/${record.id}`);
+      message.success("Room berhasil dihapus");
+      navigate("/branch/room");
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error.response?.data?.meta?.error?.message 
+        || error.response?.data?.message 
+        || "Gagal menghapus room";
+      message.error(errorMessage);
+    }
+  };
+
   return (
-    <div className="bg-gray-100 flex flex-col">
+    <div className="bg-gray-100 flex flex-col min-h-screen">
+      <Header title="Room" username={user?.ownerProfile?.name || user?.email} />
 
-      {/* Header */}
-      <Header title="Room" username={username} />
-
-      {/* Konten */}
       <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4">
-        <div className="w-full md:w-3/5 lg:w-1/2 bg-white shadow-lg rounded-xl p-4 md:p-6">
-
-          {/* Header Card */}
+        <div className="w-full md:w-2/5 bg-white shadow-lg rounded-xl p-4 md:p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-2">
             <h2 className="text-md md:text-lg font-semibold">
               Edit Room
@@ -34,66 +92,58 @@ function EditRoom() {
             />
           </div>
 
-          {/* Form */}
-          <form className="flex flex-col md:flex-row gap-6">
+          <Form 
+            form={form} 
+            layout="vertical" 
+            onFinish={handleSubmit}
+            className="flex flex-col gap-2"
+          >
+            <Form.Item
+              name="roomNumber"
+              label="No Room"
+              rules={[{ required: true, message: "Nomor Room wajib diisi" }]}
+            >
+              <Input placeholder="Masukan No Room" />
+            </Form.Item>
 
-            {/* Kiri */}
-            <div className="flex-1 flex flex-col gap-4">
+            <Form.Item
+              name="gender"
+              label="Gender Kamar (Opsi Kos)"
+              rules={[{ required: true, message: "Pilih peruntukan gender kamar" }]}
+            >
+              <Select placeholder="Pilih Gender">
+                <Select.Option value="male">
+                  Laki-laki (Putra)
+                </Select.Option>
+                <Select.Option value="female">
+                  Perempuan (Putri)
+                </Select.Option>
+                <Select.Option value="mixed">
+                  Campur (Bebas)
+                </Select.Option>
+              </Select>
+            </Form.Item>
 
-              <div>
-                <label className="text-xs md:text-sm font-medium mb-1">
-                  No Room
-                </label>
-                <Input defaultValue="A1" placeholder="Masukan No Room" />
-              </div>
+            <Form.Item
+              name="status"
+              label="Status Kamar"
+              rules={[{ required: true, message: "Status wajib dipilih" }]}
+            >
+              <Select placeholder="Pilih Status">
+                <Select.Option value="available">
+                  Tersedia / Kosong
+                </Select.Option>
+                <Select.Option value="filled">
+                  Terisi
+                </Select.Option>
+                <Select.Option value="maintenance">
+                  Dalam Perbaikan
+                </Select.Option>
+              </Select>
+            </Form.Item>
+          </Form>
 
-              <div>
-                <label className="text-xs md:text-sm font-medium mb-1">
-                  Gender
-                </label>
-                <Select
-                  defaultValue="laki"
-                  placeholder="Pilih Gender"
-                  className="w-full"
-                >
-                  <Select.Option value="laki">
-                    Laki-laki
-                  </Select.Option>
-                  <Select.Option value="perempuan">
-                    Perempuan
-                  </Select.Option>
-                </Select>
-              </div>
-
-            </div>
-
-            {/* Kanan */}
-            <div className="flex-1 flex flex-col gap-4">
-
-              <div>
-                <label className="text-xs md:text-sm font-medium mb-1">
-                  Foto Room
-                </label>
-
-                <div className="flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-md h-25 p-4">
-                  <Upload>
-                    <Button icon={<UploadOutlined />}>
-                      Ganti Foto
-                    </Button>
-                  </Upload>
-                  <span className="text-gray-500 text-xs md:text-sm mt-2 text-center">
-                    Masukan Foto Room
-                  </span>
-                </div>
-              </div>
-
-            </div>
-          </form>
-
-          {/* Tombol */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:justify-end">
-
-            {/* ✅ TOMBOL HAPUS → BUKA MODAL */}
             <Button
               className="w-full md:w-auto !bg-red-500 hover:!bg-red-600 !text-white !border-none"
               onClick={() => setOpenModal(true)}
@@ -103,28 +153,20 @@ function EditRoom() {
 
             <Button
               type="primary"
-              htmlType="submit"
+              onClick={() => form.submit()}
+              loading={loading}
               className="w-full md:w-auto"
             >
               Simpan
             </Button>
           </div>
-
         </div>
       </div>
 
-      {/* ✅ MODAL DELETE */}
       <ConfirmDeleteModal
         open={openModal}
         onCancel={() => setOpenModal(false)}
-        onConfirm={() => {
-          setOpenModal(false);
-
-          // 👉 nanti ganti dengan API delete
-          console.log("Room dihapus");
-
-          navigate("/branch/room");
-        }}
+        onConfirm={handleDelete}
       />
     </div>
   );

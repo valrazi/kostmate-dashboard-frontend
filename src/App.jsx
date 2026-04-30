@@ -20,6 +20,7 @@ import IsiRoom from './pages/IsiRoom';
 import UploadPayment from './pages/UploadPayment'
 import Notifikasi from './pages/Notifikasi';
 import Report from './pages/Report';
+import Invoice from './pages/Invoice';
 
 const { Content } = Layout;
 
@@ -46,11 +47,11 @@ function App() {
     const showSidebar = location.pathname !== '/branch' && location.pathname !== '/login';
 
     return (
-      <Layout className="h-screen overflow-hidden">
+      <Layout className="h-screen overflow-hidden print:h-auto print:overflow-visible">
         {showSidebar && <Sidebar />}
 
-        <Layout className="overflow-y-auto">
-          <Content className="p-6 bg-gray-100 min-h-max">
+        <Layout className="overflow-y-auto print:overflow-visible print:h-auto">
+          <Content className="p-6 bg-gray-100 min-h-max print:p-0 print:bg-white">
             <Routes>
               <Route path="/login" element={<ProtectedRoute element={<Login />} pathname="/login" />} />
               <Route path="/" element={<ProtectedRoute element={<Dashboard />} pathname="/" />} />
@@ -67,7 +68,8 @@ function App() {
               <Route path="/room/add" element={<ProtectedRoute element={<AddRoom />} pathname="/room/add" />} />
               <Route path="/room/edit" element={<ProtectedRoute element={<EditRoom />} pathname="/room/edit" />} />
               <Route path="/room/isi" element={<ProtectedRoute element={<IsiRoom />} pathname="/room/isi" />} />
-              <Route path="/payment/upload" element={<ProtectedRoute element={<UploadPayment />} pathname="/payment/upload" />} />
+              <Route path="/payment/upload/:id" element={<ProtectedRoute element={<UploadPayment />} pathname="/payment/upload" />} />
+              <Route path="/payment/invoice/:id" element={<ProtectedRoute element={<Invoice />} pathname="/payment/invoice" />} />
               <Route path="/notifikasi" element={<ProtectedRoute element={<Notifikasi />} pathname="/notifikasi" />} />
               <Route path="/report" element={<ProtectedRoute element={<Report />} pathname="/report" />} />
             </Routes>

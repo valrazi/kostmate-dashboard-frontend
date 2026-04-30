@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Input,
   Button,
@@ -6,17 +6,24 @@ import {
   Table,
   Space,
   Tag,
+  message
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
+import useAppStore from "../store/useAppStore";
 
 const { Option } = Select;
 
 function Payment() {
-  const username = "Manto Ariyansyah";
+  const user = useAppStore((state) => state.user);
+  const username = user?.name || "Admin";
   const navigate = useNavigate();
 
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
   // STATE FILTER
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -28,24 +35,63 @@ function Payment() {
 
   const years = [2023, 2024, 2025, 2026];
 
-  // FORMAT RUPIAH
-  const formatRupiah = (number) => {
-    if (!number) return "-";
-    return "Rp " + number.toLocaleString("id-ID");
+  // FETCH DATA
+  const fetchPayments = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/payments');
+      // Format response to table data
+      const paymentsData = response.data || [];
+      const formattedData = paymentsData.map((item, index) => {
+        // Find payment month/year from dueDate
+        const due = new Date(item.dueDate);
+        const pMonth = due.getMonth(); // 0-11
+        const pYear = due.getFullYear();
+        
+        return {
+          key: item.id,
+          id: item.id,
+          room: item.room?.roomNumber || "-",
+          name: item.customer?.name || "-",
+          paymentKe: `Bulan ${pMonth + 1}`,
+          date: item.paymentDate ? new Date(item.paymentDate).toLocaleDateString("id-ID") : "-",
+          price: parseFloat(item.amount),
+          status: item.status === 'paid' ? 'Lunas' : 'Belum Lunas',
+          month: pMonth + 1,
+          year: pYear,
+        };
+      });
+      setData(formattedData);
+    } catch (error) {
+      console.error("Failed to fetch payments:", error);
+      message.error("Gagal mengambil data pembayaran");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // DATA
-  const data = [
-    { key: 1, room: "A1", name: "Manto Ariyansyah", paymentKe: "Bulan 5", date: "22/5/2025", price: 500000, status: "Lunas" },
-    { key: 2, room: "A2", name: "Andi Saputra", paymentKe: "Bulan 5", date: "-", price: 0, status: "Belum Lunas" },
-    { key: 3, room: "A3", name: "Budi Santoso", paymentKe: "Bulan 5", date: "20/5/2025", price: 1500000, status: "Lunas" },
-  ];
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
+  // FORMAT RUPIAH
+  const formatRupiah = (number) => {
+    if (!number && number !== 0) return "-";
+    return "Rp " + number.toLocaleString("id-ID");
+  };
 
   // FILTER HANDLER
   const handleYearChange = (value) => {
     setSelectedYear(value);
     setSelectedMonth(null); // reset bulan kalau tahun berubah
   };
+
+  // Filtered Data
+  const filteredData = data.filter((item) => {
+    if (selectedYear && item.year !== selectedYear) return false;
+    if (selectedMonth && item.month !== selectedMonth) return false;
+    return true;
+  });
 
   // COLUMNS
   const columns = [
@@ -81,31 +127,30 @@ function Payment() {
       key: "action",
       render: (_, record) => (
         <Space>
+          <Button
+            size="small"
+            className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
+            onClick={() => navigate(`/payment/invoice/${record.id}`)}
+          >
+            Invoice
+          </Button>
+
           {record.status === "Belum Lunas" ? (
             <Button
               size="small"
               className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
-              onClick={() => navigate("/payment/upload")}
+              onClick={() => navigate(`/payment/upload/${record.id}`)}
             >
               Upload
             </Button>
           ) : (
-            <>
-              <Button
-                size="small"
-                className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
-                onClick={() => navigate("/payment/edit")}
-              >
-                Edit
-              </Button>
-
-              <Button
-                size="small"
-                className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
-              >
-                Download
-              </Button>
-            </>
+            <Button
+              size="small"
+              className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
+              onClick={() => navigate("/payment/edit")}
+            >
+              Edit
+            </Button>
           )}
         </Space>
       ),
@@ -171,9 +216,10 @@ function Payment() {
         {/* TABLE */}
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={filteredData}
           pagination={false}
           scroll={{ x: 800 }}
+          loading={loading}
         />
       </div>
     </div>

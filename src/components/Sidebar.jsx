@@ -56,7 +56,7 @@ function Sidebar() {
       breakpoint="md"
       onBreakpoint={(broken) => setCollapsed(broken)}
       theme="light"
-      className="min-h-screen shadow-lg rounded-3xl"
+      className="min-h-screen shadow-lg rounded-3xl print:hidden"
       style={{ background: '#fff' }}
     >
       <div className="flex flex-col h-full">

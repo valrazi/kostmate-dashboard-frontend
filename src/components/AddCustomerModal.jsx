@@ -1,23 +1,89 @@
-import { Modal, Button, Input, Upload, Select, Grid } from "antd";
+import { Modal, Button, Input, Upload, Select, Grid, Form, message } from "antd";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import useAppStore from "../store/useAppStore";
+import api from "../services/api";
 
 const { Option } = Select;
 const { useBreakpoint } = Grid;
 
-function AddCustomerModal({ open, onCancel }) {
+function AddCustomerModal({ open, onCancel, onSuccessCallback }) {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+  const selectedBranch = useAppStore((state) => state.selectedBranch);
+
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [fileList, setFileList] = useState([]);
+
+  const customUpload = async ({ file, onSuccess, onError }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post("/media/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const url = res.data?.data?.url || res.data?.url;
+      form.setFieldsValue({ identityUrl: url });
+      setFileList([{ uid: file.uid, name: file.name, status: 'done', url }]);
+      onSuccess("ok");
+      message.success("KTP berhasil diunggah");
+    } catch (error) {
+      console.error(error);
+      onError(error);
+      message.error("Gagal mengunggah gambar KTP");
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setFileList([]);
+    form.setFieldsValue({ identityUrl: null });
+  };
+
+  const handleSubmit = async (values) => {
+    try {
+      setLoading(true);
+      const payload = {
+        ...values,
+        branchId: selectedBranch.id,
+      };
+
+      const res = await api.post("/customers", payload);
+      message.success("Customer berhasil ditambahkan");
+      
+      // Reset form on success
+      form.resetFields();
+      setFileList([]);
+      
+      if (onSuccessCallback) {
+        onSuccessCallback(res.data.data ? res.data.data : res.data); // Return customer if needed
+      }
+      onCancel();
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error.response?.data?.meta?.error?.message 
+        || error.response?.data?.message 
+        || "Gagal menambah customer";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Modal
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={isMobile ? "95%" : 500}
+      width={isMobile ? "95%" : 600}
       centered
       closable={false}
+      destroyOnClose
+      afterClose={() => {
+        form.resetFields();
+        setFileList([]);
+      }}
     >
-      {/* Header */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
         <h2 className="text-md md:text-lg font-semibold">
           Tambah Customer
@@ -25,73 +91,80 @@ function AddCustomerModal({ open, onCancel }) {
         <Button type="text" icon={<CloseOutlined />} onClick={onCancel} />
       </div>
 
-      {/* Form */}
-      <form className="flex flex-col md:flex-row gap-6">
-
+      <Form 
+        form={form} 
+        layout="vertical" 
+        onFinish={handleSubmit}
+        className="flex flex-col md:flex-row gap-6"
+      >
         {/* Kiri */}
-        <div className="flex-1 flex flex-col gap-4">
-
-          <div>
-            <label className="text-xs md:text-sm font-medium mb-1">
-              Nama Customer
-            </label>
+        <div className="flex-1 flex flex-col">
+          <Form.Item
+            name="name"
+            label="Nama Customer"
+            rules={[{ required: true, message: "Nama wajib diisi" }]}
+          >
             <Input placeholder="Masukan Nama Customer" />
-          </div>
+          </Form.Item>
 
-          <div>
-            <label className="text-xs md:text-sm font-medium mb-1">
-              Jenis Kelamin
-            </label>
-            <Select placeholder="Pilih Jenis Kelamin" className="w-full">
-              <Option value="L">Laki-laki</Option>
-              <Option value="P">Perempuan</Option>
+          <Form.Item
+            name="gender"
+            label="Jenis Kelamin"
+            rules={[{ required: true, message: "Pilih jenis kelamin" }]}
+          >
+            <Select placeholder="Pilih Jenis Kelamin">
+              <Option value="male">Laki-laki</Option>
+              <Option value="female">Perempuan</Option>
             </Select>
-          </div>
+          </Form.Item>
 
-          <div>
-            <label className="text-xs md:text-sm font-medium mb-1">
-              No WhatsApp
-            </label>
+          <Form.Item
+            name="whatsappNumber"
+            label="No WhatsApp"
+            rules={[{ required: true, message: "Nomor WhatsApp wajib diisi" }]}
+          >
             <Input placeholder="Masukan No WhatsApp" />
-          </div>
-
+          </Form.Item>
         </div>
 
         {/* Kanan */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col">
+          <Form.Item
+            name="emergencyContactName"
+            label="Nama Kontak Darurat"
+            rules={[{ required: true, message: "Nama kontak darurat wajib diisi" }]}
+          >
+            <Input placeholder="Nama (Misal: Keluarga/Ibu/Saudara)" />
+          </Form.Item>
 
-          <div>
-            <label className="text-xs md:text-sm font-medium mb-1">
-              No Darurat
-            </label>
+          <Form.Item
+            name="emergencyPhoneNumber"
+            label="No Darurat"
+            rules={[{ required: true, message: "No Darurat wajib diisi" }]}
+          >
             <Input placeholder="Masukan No Darurat" />
-          </div>
+          </Form.Item>
 
-          <div>
-            <label className="text-xs md:text-sm font-medium mb-1">
-              Foto KTP
-            </label>
-
-            <div className="flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-md h-28 p-4">
-              <Upload>
-                <Button icon={<UploadOutlined />}>
-                  Unggah KTP
-                </Button>
-              </Upload>
-              <span className="text-gray-500 text-xs mt-2 text-center">
-                Masukan Foto KTP
-              </span>
-            </div>
-          </div>
-
+          <Form.Item
+            name="identityUrl"
+            label="Foto KTP"
+            rules={[{ required: true, message: "KTP wajib diunggah" }]}
+          >
+            <Upload 
+              customRequest={customUpload}
+              fileList={fileList}
+              onRemove={handleRemoveFile}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Unggah KTP</Button>
+            </Upload>
+          </Form.Item>
         </div>
+      </Form>
 
-      </form>
-
-      {/* Button */}
-      <div className="flex justify-end gap-2 mt-6">
+      <div className="flex justify-end gap-2 mt-2">
         <Button onClick={onCancel}>Batal</Button>
-        <Button type="primary">Simpan</Button>
+        <Button type="primary" loading={loading} onClick={() => form.submit()}>Simpan</Button>
       </div>
     </Modal>
   );

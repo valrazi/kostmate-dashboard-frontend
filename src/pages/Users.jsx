@@ -83,6 +83,8 @@ function Users() {
       dataIndex: "room",
       key: "room",
       align: "left",
+      render: (text, record, idx) => idx + 1
+
     },
 
     {
@@ -162,9 +164,9 @@ function Users() {
         <Header title="Customer" username={user?.ownerProfile?.name || user?.email} />
 
         <div className="w-full md:w-96 max-w-md mt-4">
-          <Input 
-            placeholder="Cari Nama Customer" 
-            prefix={<SearchOutlined />} 
+          <Input
+            placeholder="Cari Nama Customer"
+            prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
