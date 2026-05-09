@@ -8,6 +8,7 @@ import useAppStore from '../store/useAppStore';
 function Header({ title, username }) {
   const navigate = useNavigate();
   const clearUser = useAppStore((state) => state.clearUser);
+  const selectedBranch = useAppStore((state) => state.selectedBranch);
   const [hover, setHover] = useState(false);
 
   // Ambil inisial nama (MA)
@@ -57,8 +58,9 @@ function Header({ title, username }) {
         {title}
       </h1>
        <h1 className="text-sm sm:text-base md:text-xl lg:text-lg font-semibold truncate text-[#1B59F8]">
-        Kost Anugrah (27/<span className='text-sm text-[#1B59F8]'>80</span>)
-        
+        {selectedBranch ? `${selectedBranch.name} (${selectedBranch.customers?.length || 0}/` : "Pilih Cabang ("}
+        <span className='text-sm text-[#1B59F8]'>{selectedBranch ? selectedBranch.roomQuota : 0}</span>
+        )
       </h1>
       </div>
      

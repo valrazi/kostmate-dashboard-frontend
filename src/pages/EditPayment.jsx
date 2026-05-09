@@ -1,127 +1,283 @@
-import { Button, Input, Upload, Select } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Button, Input, Upload, message, Spin } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
+import api from "../services/api";
+import useAppStore from "../store/useAppStore";
 
 function EditPayment() {
   const navigate = useNavigate();
-  const username = "Manto Ariyansyah";
+  const { id } = useParams();
+  const user = useAppStore((state) => state.user);
+  const username = user?.name || "Admin";
 
- return (
-  <div className="min-h-screen bg-gray-100 flex flex-col">
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  
+  // File upload state
+  const [fileList, setFileList] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
-    {/* HEADER STICKY */}
-    <div className="sticky top-0 z-50 bg-gray-100 px-6 pt-6 pb-4">
-      <Header title="Payment" username={username} />
-    </div>
-
-    {/* CONTENT */}
-    <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4 overflow-y-auto">
-      <div className="w-full md:w-3/5 lg:w-1/2 bg-white shadow-lg rounded-xl p-4 md:p-6">
+  useEffect(() => {
+    const fetchPayment = async () => {
+      try {
+        const response = await api.get(`/payments/${id}`);
+        setPaymentData(response.data);
         
-        {/* Header Card */}
-        <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-2">
-          <h2 className="text-md md:text-lg font-semibold">
-            Edit Payment
-          </h2>
+        // Initialize image URL if payment already has an invoice
+        if (response.data?.invoiceUrl) {
+          setImageUrl(response.data.invoiceUrl);
+          setFileList([
+            {
+              uid: '-1',
+              name: 'Bukti Transfer',
+              status: 'done',
+              url: response.data.invoiceUrl,
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch payment:", error);
+        message.error("Gagal mengambil data tagihan");
+        navigate(-1);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-          <Button
-            type="text"
-            icon={<CloseOutlined />}
-            onClick={() => navigate(-1)}
-          />
-        </div>
+    if (id) {
+      fetchPayment();
+    }
+  }, [id, navigate]);
 
-        {/* FORM */}
-        <form className="flex flex-col md:flex-row gap-6">
+  const formatRupiah = (number) => {
+    if (!number && number !== 0) return "-";
+    return "Rp " + number.toLocaleString("id-ID");
+  };
+
+  // Custom upload request
+  const customUpload = async ({ file, onSuccess, onError }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setUploadingImage(true);
+    try {
+      const res = await api.post('/media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const uploadedUrl = res.data?.url || res.url;
+      setImageUrl(uploadedUrl);
+      
+      setFileList([
+        {
+          uid: file.uid,
+          name: file.name,
+          status: 'done',
+          url: uploadedUrl,
+        }
+      ]);
+      
+      onSuccess(res, file);
+      message.success("Foto berhasil diunggah");
+    } catch (error) {
+      console.error("Upload error:", error);
+      onError(error);
+      message.error("Gagal mengunggah foto");
+      setFileList([]);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleUploadChange = (info) => {
+    setFileList(info.fileList);
+  };
+
+  const handleRemove = () => {
+    setImageUrl("");
+    setFileList([]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!imageUrl) {
+      return message.warning("Silakan unggah bukti transfer terlebih dahulu!");
+    }
+
+    setSubmitting(true);
+    try {
+      await api.patch(`/payments/${id}`, {
+        invoiceUrl: imageUrl,
+        status: "paid", // ensure it stays paid
+      });
+      message.success("Pembayaran berhasil diubah!");
+      navigate("/payment");
+    } catch (error) {
+      console.error("Submit error:", error);
+      message.error("Gagal mengubah pembayaran");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <Spin size="large" tip="Memuat data..." />
+      </div>
+    );
+  }
+
+  // Formatting display values
+  const rentTypeMap = {
+    'monthly': 'Bulanan',
+    'daily': 'Harian',
+    'weekly': 'Mingguan'
+  };
+  
+  let paymentKe = "-";
+  if (paymentData?.dueDate) {
+    const due = new Date(paymentData.dueDate);
+    paymentKe = `Bulan ${due.getMonth() + 1} Tahun ${due.getFullYear()}`;
+  }
+
+  return (
+    <div className="bg-gray-100 flex flex-col min-h-screen">
+      <div className="sticky top-0 z-50 bg-gray-100 px-6 pt-6 pb-4">
+        <Header title="Payment" username={username} />
+      </div>
+
+      <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4 pb-10">
+        <div className="w-full md:w-3/5 lg:w-1/2 bg-white shadow-lg rounded-xl p-4 md:p-6">
           
-          {/* KIRI */}
-          <div className="flex-1 flex flex-col gap-4">
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Nama Kost
-              </label>
-              <Input value="Kost Anugrah" disabled />
-            </div>
-
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Pilih Customer
-              </label>
-              <Input value="Manto Ariyansyah" disabled />
-            </div>
-
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                No Kost
-              </label>
-              <Input value="A1" disabled />
-            </div>
-
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                No WhatsApp
-              </label>
-              <Input value="0878787878" disabled />
-            </div>
+          <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-2">
+            <h2 className="text-md md:text-lg font-semibold">
+              Edit Payment
+            </h2>
+            <Button
+              type="text"
+              icon={<CloseOutlined />}
+              onClick={() => navigate(-1)}
+            />
           </div>
 
-          {/* KANAN */}
-          <div className="flex-1 flex flex-col gap-4">
+          <form className="flex flex-col md:flex-row gap-6" onSubmit={handleSubmit}>
+            
+            <div className="flex-1 flex flex-col gap-4">
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Nama Cabang
+                </label>
+                <Input value={paymentData?.branch?.name || "Kostmate"} disabled className="w-full" />
+              </div>
 
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Sewa
-              </label>
-              <Input value="Bulanan" disabled />
-            </div>
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Nama Customer
+                </label>
+                <Input value={paymentData?.customer?.name || "-"} disabled className="w-full" />
+              </div>
 
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Pembayaran Ke-
-              </label>
-              <Input value="Bulan 5" disabled />
-            </div>
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  No Kost
+                </label>
+                <Input value={paymentData?.room?.roomNumber || "-"} disabled className="w-full" />
+              </div>
 
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Biaya Room
-              </label>
-              <Input value="Rp. 1.000.000" disabled />
-            </div>
-
-            <div>
-              <label className="text-xs md:text-sm font-medium mb-1">
-                Foto Bukti Transfer
-              </label>
-
-              <div className="flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-md h-25 p-4">
-                <Upload>
-                  <Button icon={<UploadOutlined />}>
-                    Unggah Bukti
-                  </Button>
-                </Upload>
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  No WhatsApp
+                </label>
+                <Input value={paymentData?.customer?.whatsappNumber || "-"} disabled className="w-full" />
               </div>
             </div>
 
+            <div className="flex-1 flex flex-col gap-4">
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Sewa
+                </label>
+                <Input value={rentTypeMap[paymentData?.rental?.rentType] || "-"} disabled className="w-full" />
+              </div>
+
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Pembayaran Ke-
+                </label>
+                <Input value={paymentKe} disabled className="w-full" />
+              </div>
+
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Biaya Room
+                </label>
+                <Input value={formatRupiah(parseFloat(paymentData?.amount))} disabled className="w-full font-bold text-gray-800" />
+              </div>
+              
+              <div>
+                <label className="text-xs md:text-sm font-medium mb-1 block">
+                  Foto Bukti Transfer <span className="text-red-500">*</span>
+                </label>
+
+                <div className="flex flex-col items-center justify-center border border-dashed border-blue-300 rounded-md p-4 bg-blue-50">
+                  <Upload
+                    customRequest={customUpload}
+                    fileList={fileList}
+                    onChange={handleUploadChange}
+                    onRemove={handleRemove}
+                    maxCount={1}
+                    listType="picture"
+                    accept="image/*"
+                  >
+                    <Button 
+                      icon={<UploadOutlined />} 
+                      loading={uploadingImage}
+                      className="mb-2"
+                    >
+                      {imageUrl ? 'Ganti Bukti' : 'Unggah Bukti'}
+                    </Button>
+                  </Upload>
+                  {!imageUrl && (
+                    <span className="text-gray-500 text-xs md:text-sm mt-1 text-center">
+                      Masukan Foto Bukti Transfer (Max 5MB)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </form>
+
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-8 pt-4 border-t border-gray-100 md:justify-end">
+            <Button
+              className="w-full md:w-32"
+              onClick={() => navigate(-1)}
+              disabled={submitting || uploadingImage}
+            >
+              Batal
+            </Button>
+
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+              loading={submitting}
+              disabled={uploadingImage}
+              className="w-full md:w-32 bg-blue-600"
+            >
+              Simpan
+            </Button>
           </div>
-        </form>
 
-        {/* BUTTON */}
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:justify-end">
-          <Button onClick={() => navigate(-1)} className="w-full md:w-auto">
-            Batal
-          </Button>
-
-          <Button type="primary" className="w-full md:w-auto">
-            Simpan
-          </Button>
         </div>
-
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default EditPayment;

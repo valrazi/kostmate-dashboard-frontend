@@ -206,17 +206,19 @@ function IsiRoom() {
                       ))
                     }
                   </Select>
+                </Form.Item>
                   
-                  {!isReadOnly && (
+                {!isReadOnly && (
+                  <div className="-mt-4 mb-4">
                     <Button
                       type="link"
-                      className="!p-0 mt-1 text-blue-500"
+                      className="!p-0 text-blue-500"
                       onClick={() => setIsModalOpen(true)}
                     >
                       + Tambah Customer Baru
                     </Button>
-                  )}
-                </Form.Item>
+                  </div>
+                )}
                 
                 <Form.Item 
                   name="startDate" 
@@ -298,7 +300,16 @@ function IsiRoom() {
                 Batal
               </Button>
 
-        
+              {!isReadOnly && (
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  className="w-full md:w-auto"
+                >
+                  Simpan
+                </Button>
+              )}
             </div>
           </Form>
 

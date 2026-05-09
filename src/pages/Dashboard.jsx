@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Statistic, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Statistic, Row, Col, Spin, message } from 'antd';
 import {
   BranchesOutlined,
   UserOutlined,
@@ -11,26 +11,57 @@ import {
   AreaChart, Area
 } from 'recharts';
 import Header from '../components/Header';
-
-// --- DATA ---
-const branchData = [
-  { name: 'Kost Anugrah', Terisi: 27, Kosong: 13 },
-  { name: 'Kost Berkah', Terisi: 40, Kosong: 10 },
-  { name: 'Kost Ceria', Terisi: 15, Kosong: 25 },
-  { name: 'Kost Damai', Terisi: 35, Kosong: 5 },
-];
-
-const paymentTrend = [
-  { name: 'Jan', Pendapatan: 40000000 },
-  { name: 'Feb', Pendapatan: 42000000 },
-  { name: 'Mar', Pendapatan: 45000000 },
-  { name: 'Apr', Pendapatan: 41000000 },
-  { name: 'Mei', Pendapatan: 50000000 },
-  { name: 'Jun', Pendapatan: 55000000 },
-];
+import api from '../services/api';
+import useAppStore from '../store/useAppStore';
 
 function Dashboard() {
-  const username = "Manto Ariyansyah";
+  const user = useAppStore((state) => state.user);
+  const username = user?.name || "Admin";
+  
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalBranches: 0,
+    totalCustomers: 0,
+    totalRooms: 0,
+    occupiedRooms: 0,
+    totalRevenue: 0,
+    branchOccupancy: [],
+    paymentTrend: []
+  });
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        // Provide owner_id if available, otherwise it returns all branches for admin
+        const ownerIdParam = user?.role === 'OWNER' ? `?owner_id=${user.id}` : '';
+        const response = await api.get(`/dashboard/stats${ownerIdParam}`);
+        
+        // Reverse payment trend to show oldest first (from 6 months ago to now)
+        const reversedTrend = [...response.data.paymentTrend].reverse();
+        
+        setStats({
+          ...response.data,
+          paymentTrend: reversedTrend
+        });
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats", error);
+        message.error("Gagal mengambil data dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Spin size="large" tip="Memuat dashboard..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -39,13 +70,10 @@ function Dashboard() {
         className="sticky z-50 bg-gray-100 -mt-6 -mx-6 px-6 pt-6 pb-4 mb-2"
         style={{ top: '0px' }}
       >
-        {/* HEADER */}
         <Header title="Dashboard" username={username} />
-
       </div>
 
-      {/* CONTENT */}
-      <div className="px-4 md:px-6">
+      <div className="px-4 md:px-6 pb-10">
 
         {/* STATISTIC */}
         <Row gutter={[16, 16]}>
@@ -54,7 +82,7 @@ function Dashboard() {
             <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
               <Statistic
                 title="Total Branch"
-                value={4}
+                value={stats.totalBranches}
                 prefix={<BranchesOutlined style={{ color: "#6366f1" }} />}
               />
             </Card>
@@ -64,7 +92,7 @@ function Dashboard() {
             <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
               <Statistic
                 title="Total Customer"
-                value={117}
+                value={stats.totalCustomers}
                 prefix={<UserOutlined style={{ color: "#22c55e" }} />}
               />
             </Card>
@@ -74,8 +102,8 @@ function Dashboard() {
             <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
               <Statistic
                 title="Room Terisi"
-                value={117}
-                suffix="/ 170"
+                value={stats.occupiedRooms}
+                suffix={`/ ${stats.totalRooms}`}
                 prefix={<HomeOutlined style={{ color: "#f59e0b" }} />}
               />
             </Card>
@@ -84,10 +112,10 @@ function Dashboard() {
           <Col xs={24} sm={12} lg={6}>
             <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
               <Statistic
-                title="Pendapatan"
-                value={55000000}
+                title="Pendapatan Keseluruhan"
+                value={stats.totalRevenue}
                 prefix={<CreditCardOutlined style={{ color: "#3b82f6" }} />}
-                formatter={(val) => `Rp ${val.toLocaleString()}`}
+                formatter={(val) => `Rp ${Number(val).toLocaleString('id-ID')}`}
               />
             </Card>
           </Col>
@@ -101,95 +129,108 @@ function Dashboard() {
           <Col xs={24} lg={12}>
             <Card
               title="Okupansi Cabang"
-              className="rounded-2xl shadow-md hover:shadow-lg transition-all duration-300"
+              className="rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 h-full"
             >
-              <div className="w-full h-[260px] md:h-[320px]">
-                <ResponsiveContainer>
-                  <BarChart data={branchData} barGap={6}>
-                    
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              {stats.branchOccupancy.length === 0 ? (
+                <div className="flex items-center justify-center h-[260px] text-gray-400">Belum ada data cabang</div>
+              ) : (
+                <div className="w-full h-[260px] md:h-[320px]">
+                  <ResponsiveContainer>
+                    <BarChart data={stats.branchOccupancy} barGap={6}>
+                      
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
 
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
 
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "10px",
-                        border: "none",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                      }}
-                    />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "none",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                        }}
+                      />
 
-                    <Legend />
+                      <Legend />
 
-                    <Bar
-                      dataKey="Terisi"
-                      stackId="a"
-                      fill="#6366f1"
-                      radius={[6, 6, 0, 0]}
-                    />
+                      <Bar
+                        dataKey="Terisi"
+                        stackId="a"
+                        fill="#6366f1"
+                        radius={[6, 6, 0, 0]}
+                      />
 
-                    <Bar
-                      dataKey="Kosong"
-                      stackId="a"
-                      fill="#e5e7eb"
-                      radius={[6, 6, 0, 0]}
-                    />
+                      <Bar
+                        dataKey="Kosong"
+                        stackId="a"
+                        fill="#e5e7eb"
+                        radius={[6, 6, 0, 0]}
+                      />
 
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </Card>
           </Col>
 
           {/* AREA CHART */}
           <Col xs={24} lg={12}>
             <Card
-              title="Tren Pendapatan"
-              className="rounded-2xl shadow-md hover:shadow-lg transition-all duration-300"
+              title="Tren Pendapatan (6 Bulan Terakhir)"
+              className="rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 h-full"
             >
-              <div className="w-full h-[260px] md:h-[320px]">
-                <ResponsiveContainer>
-                  <AreaChart data={paymentTrend}>
-                    
-                    <defs>
-                      <linearGradient id="colorPendapatan" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
+              {stats.paymentTrend.length === 0 ? (
+                <div className="flex items-center justify-center h-[260px] text-gray-400">Belum ada data pendapatan</div>
+              ) : (
+                <div className="w-full h-[260px] md:h-[320px]">
+                  <ResponsiveContainer>
+                    <AreaChart data={stats.paymentTrend}>
+                      
+                      <defs>
+                        <linearGradient id="colorPendapatan" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
 
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
 
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
 
-                    <YAxis
-                      tickFormatter={(val) => `${val / 1000000}Jt`}
-                      tick={{ fontSize: 12 }}
-                    />
+                      <YAxis
+                        tickFormatter={(val) => {
+                          if (val >= 1000000) return `${val / 1000000}Jt`;
+                          if (val >= 1000) return `${val / 1000}Rb`;
+                          return val;
+                        }}
+                        tick={{ fontSize: 12 }}
+                        width={60}
+                      />
 
-                    <Tooltip
-                      formatter={(val) => `Rp ${val.toLocaleString()}`}
-                      contentStyle={{
-                        borderRadius: "10px",
-                        border: "none",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                      }}
-                    />
+                      <Tooltip
+                        formatter={(val) => `Rp ${Number(val).toLocaleString('id-ID')}`}
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "none",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                        }}
+                      />
 
-                    <Area
-                      type="monotone"
-                      dataKey="Pendapatan"
-                      stroke="#6366f1"
-                      strokeWidth={3}
-                      fill="url(#colorPendapatan)"
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
+                      <Area
+                        type="monotone"
+                        dataKey="Pendapatan"
+                        stroke="#6366f1"
+                        strokeWidth={3}
+                        fill="url(#colorPendapatan)"
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
 
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </Card>
           </Col>
 

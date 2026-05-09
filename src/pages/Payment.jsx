@@ -144,13 +144,13 @@ function Payment() {
               Upload
             </Button>
           ) : (
-            <Button
-              size="small"
-              className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
-              onClick={() => navigate("/payment/edit")}
-            >
-              Edit
-            </Button>
+              <Button
+                size="small"
+                className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
+                onClick={() => navigate(`/payment/edit/${record.id}`)}
+              >
+                Edit
+              </Button>
           )}
         </Space>
       ),
