@@ -17,7 +17,7 @@ import useAppStore from '../store/useAppStore';
 function Dashboard() {
   const user = useAppStore((state) => state.user);
   const username = user?.name || "Admin";
-  
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalBranches: 0,
@@ -32,14 +32,15 @@ function Dashboard() {
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
+        console.log(user)
         setLoading(true);
         // Provide owner_id if available, otherwise it returns all branches for admin
-        const ownerIdParam = user?.role === 'OWNER' ? `?owner_id=${user.id}` : '';
+        const ownerIdParam = user?.role === 'OWNER' ? `?owner_id=${user.ownerProfile.id}` : '';
         const response = await api.get(`/dashboard/stats${ownerIdParam}`);
-        
+
         // Reverse payment trend to show oldest first (from 6 months ago to now)
         const reversedTrend = [...response.data.paymentTrend].reverse();
-        
+
         setStats({
           ...response.data,
           paymentTrend: reversedTrend
@@ -66,7 +67,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      <div 
+      <div
         className="sticky z-50 bg-gray-100 -mt-6 -mx-6 px-6 pt-6 pb-4 mb-2"
         style={{ top: '0px' }}
       >
@@ -77,16 +78,6 @@ function Dashboard() {
 
         {/* STATISTIC */}
         <Row gutter={[16, 16]}>
-          
-          <Col xs={24} sm={12} lg={6}>
-            <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
-              <Statistic
-                title="Total Branch"
-                value={stats.totalBranches}
-                prefix={<BranchesOutlined style={{ color: "#6366f1" }} />}
-              />
-            </Card>
-          </Col>
 
           <Col xs={24} sm={12} lg={6}>
             <Card className="rounded-2xl shadow-sm hover:shadow-md transition">
@@ -125,55 +116,6 @@ function Dashboard() {
         {/* CHART */}
         <Row gutter={[16, 16]} className="mt-6">
 
-          {/* BAR CHART */}
-          <Col xs={24} lg={12}>
-            <Card
-              title="Okupansi Cabang"
-              className="rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 h-full"
-            >
-              {stats.branchOccupancy.length === 0 ? (
-                <div className="flex items-center justify-center h-[260px] text-gray-400">Belum ada data cabang</div>
-              ) : (
-                <div className="w-full h-[260px] md:h-[320px]">
-                  <ResponsiveContainer>
-                    <BarChart data={stats.branchOccupancy} barGap={6}>
-                      
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-
-                      <Tooltip
-                        contentStyle={{
-                          borderRadius: "10px",
-                          border: "none",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                        }}
-                      />
-
-                      <Legend />
-
-                      <Bar
-                        dataKey="Terisi"
-                        stackId="a"
-                        fill="#6366f1"
-                        radius={[6, 6, 0, 0]}
-                      />
-
-                      <Bar
-                        dataKey="Kosong"
-                        stackId="a"
-                        fill="#e5e7eb"
-                        radius={[6, 6, 0, 0]}
-                      />
-
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </Card>
-          </Col>
-
           {/* AREA CHART */}
           <Col xs={24} lg={12}>
             <Card
@@ -186,7 +128,7 @@ function Dashboard() {
                 <div className="w-full h-[260px] md:h-[320px]">
                   <ResponsiveContainer>
                     <AreaChart data={stats.paymentTrend}>
-                      
+
                       <defs>
                         <linearGradient id="colorPendapatan" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />

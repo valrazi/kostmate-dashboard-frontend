@@ -18,19 +18,20 @@ const { Option } = Select;
 
 function Payment() {
   const user = useAppStore((state) => state.user);
+  const selectedBranch = useAppStore((state) => state.selectedBranch);
   const username = user?.name || "Admin";
   const navigate = useNavigate();
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // STATE FILTER
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
 
   const months = [
-    "Januari","Februari","Maret","April","Mei","Juni",
-    "Juli","Agustus","September","Oktober","November","Desember"
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
 
   const years = [2023, 2024, 2025, 2026];
@@ -39,7 +40,10 @@ function Payment() {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/payments');
+      console.log(selectedBranch)
+
+      const branchId = selectedBranch.id;
+      const response = await api.get(`/payments${branchId ? `?branch_id=${branchId}` : ''}`);
       // Format response to table data
       const paymentsData = response.data || [];
       const formattedData = paymentsData.map((item, index) => {
@@ -47,7 +51,7 @@ function Payment() {
         const due = new Date(item.dueDate);
         const pMonth = due.getMonth(); // 0-11
         const pYear = due.getFullYear();
-        
+
         return {
           key: item.id,
           id: item.id,
@@ -144,13 +148,13 @@ function Payment() {
               Upload
             </Button>
           ) : (
-              <Button
-                size="small"
-                className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
-                onClick={() => navigate(`/payment/edit/${record.id}`)}
-              >
-                Edit
-              </Button>
+            <Button
+              size="small"
+              className="!border-blue-500 !text-blue-500 hover:!text-white hover:!bg-blue-500 hover:!border-blue-500"
+              onClick={() => navigate(`/payment/edit/${record.id}`)}
+            >
+              Edit
+            </Button>
           )}
         </Space>
       ),
