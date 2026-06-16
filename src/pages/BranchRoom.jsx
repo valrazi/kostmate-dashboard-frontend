@@ -1,5 +1,5 @@
-import { Input, Button, Table, Space, Tag, message } from "antd";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { Input, Button, Table, Space, Tag, message, Modal, Descriptions } from "antd";
+import { SearchOutlined, PlusOutlined, EyeOutlined } from "@ant-design/icons";
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -10,10 +10,14 @@ function BranchRoom() {
   const navigate = useNavigate();
   const user = useAppStore((state) => state.user);
   const selectedBranch = useAppStore((state) => state.selectedBranch);
+  const setSelectedBranchStore = useAppStore((state) => state.setSelectedBranch);
   
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [detailRecord, setDetailRecord] = useState(null);
 
   const formatRupiah = (number) => {
     if (!number) return "-";
@@ -26,11 +30,17 @@ function BranchRoom() {
     } else {
       fetchRooms();
     }
-  }, [selectedBranch]);
+  }, [selectedBranch?.id, navigate]);
 
   const fetchRooms = async () => {
     try {
       setLoading(true);
+
+      // Refresh branch info from api to update occupancy count in the header
+      const branchRes = await api.get(`/branches/${selectedBranch.id}`);
+      const updatedBranch = branchRes.data.data ? branchRes.data.data : branchRes.data;
+      setSelectedBranchStore(updatedBranch);
+
       const res = await api.get(`/rooms?branch_id=${selectedBranch.id}`);
       
       const rawData = res.data.data ? res.data.data : res.data;
@@ -58,6 +68,11 @@ function BranchRoom() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDetailClick = (record) => {
+    setDetailRecord(record);
+    setIsDetailOpen(true);
   };
 
   const filteredData = data.filter((item) => 
@@ -103,6 +118,16 @@ function BranchRoom() {
       align: "center",
       render: (_, record) => (
         <Space size="middle">
+          {/* DETAIL */}
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            className="!border-gray-500 !text-gray-500 hover:!text-white hover:!bg-gray-500 hover:!border-gray-500"
+            onClick={() => handleDetailClick(record)}
+          >
+            Detail
+          </Button>
+
           {record.status !== "Terisi" && (
             <Button
               size="small"
@@ -167,6 +192,62 @@ function BranchRoom() {
           scroll={{ x: 800 }}
         />
       </div>
+
+      {/* DETAIL MODAL */}
+      <Modal
+        title="Detail Room"
+        open={isDetailOpen}
+        onCancel={() => {
+          setIsDetailOpen(false);
+          setDetailRecord(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setIsDetailOpen(false);
+            setDetailRecord(null);
+          }}>
+            Tutup
+          </Button>
+        ]}
+        width={600}
+      >
+        {detailRecord && (
+          <Descriptions bordered column={1} className="mt-4">
+            <Descriptions.Item label="Nomor Kamar">
+              {detailRecord.roomNumber}
+            </Descriptions.Item>
+            <Descriptions.Item label="Kategori Gender Kamar">
+              {detailRecord.gender === "Laki-laki" ? "Laki-laki" : detailRecord.gender === "Perempuan" ? "Perempuan" : "Campuran / Bebas"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Status Kamar">
+              <Tag color={detailRecord.status === "Terisi" ? "green" : detailRecord.status === "Maintenance" ? "orange" : "red"}>
+                {detailRecord.status}
+              </Tag>
+            </Descriptions.Item>
+            {detailRecord.status === "Terisi" && (
+              <>
+                <Descriptions.Item label="Nama Penyewa (Customer)">
+                  {detailRecord.name}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tanggal Masuk">
+                  {detailRecord.date}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tipe Sewa">
+                  {detailRecord.rent}
+                </Descriptions.Item>
+                <Descriptions.Item label="Biaya Sewa Bulanan">
+                  {formatRupiah(detailRecord.price)}
+                </Descriptions.Item>
+                {detailRecord.rentals?.[0]?.notes && (
+                  <Descriptions.Item label="Catatan Khusus">
+                    {detailRecord.rentals[0].notes}
+                  </Descriptions.Item>
+                )}
+              </>
+            )}
+          </Descriptions>
+        )}
+      </Modal>
     </div>
   );
 }

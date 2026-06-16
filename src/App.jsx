@@ -5,7 +5,6 @@ import Login from './pages/Login';
 import useAppStore from './store/useAppStore';
 import AddRoom from './pages/AddRoom';
 import EditRoom from './pages/EditRoom';
-import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Branch from './pages/Branch';
 import BranchRoom from './pages/BranchRoom';
@@ -44,7 +43,7 @@ const ProtectedRoute = ({ element, pathname }) => {
 function App() {
   const AppContent = () => {
     const location = useLocation();
-    const showSidebar = location.pathname !== '/branch' && location.pathname !== '/login';
+    const showSidebar = location.pathname !== '/branch' && location.pathname !== '/login' && location.pathname !== '/account';
 
     return (
       <Layout className="h-screen overflow-hidden print:h-auto print:overflow-visible">
@@ -54,7 +53,7 @@ function App() {
           <Content className="p-6 bg-gray-100 min-h-max print:p-0 print:bg-white">
             <Routes>
               <Route path="/login" element={<ProtectedRoute element={<Login />} pathname="/login" />} />
-              <Route path="/" element={<ProtectedRoute element={<Dashboard />} pathname="/" />} />
+              <Route path="/" element={<ProtectedRoute element={<Report />} pathname="/" />} />
               <Route path="/branch" element={<ProtectedRoute element={<Branch />} pathname="/branch" />} />
               <Route path="/branch/room" element={<ProtectedRoute element={<BranchRoom />} pathname="/branch/room" />} />
               {/* <Route path="/branch/room/edit" element={<ProtectedRoute element={<EditBranchRoom />} pathname="/branch/room/edit" />} /> */}
@@ -71,7 +70,7 @@ function App() {
               <Route path="/payment/upload/:id" element={<ProtectedRoute element={<UploadPayment />} pathname="/payment/upload" />} />
               <Route path="/payment/invoice/:id" element={<ProtectedRoute element={<Invoice />} pathname="/payment/invoice" />} />
               <Route path="/notifikasi" element={<ProtectedRoute element={<Notifikasi />} pathname="/notifikasi" />} />
-              <Route path="/report" element={<ProtectedRoute element={<Report />} pathname="/report" />} />
+              <Route path="/report" element={<Navigate to="/" replace />} />
             </Routes>
           </Content>
         </Layout>

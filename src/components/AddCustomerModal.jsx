@@ -1,6 +1,6 @@
 import { Modal, Button, Input, Upload, Select, Grid, Form, message } from "antd";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAppStore from "../store/useAppStore";
 import api from "../services/api";
 
@@ -15,6 +15,27 @@ function AddCustomerModal({ open, onCancel, onSuccessCallback }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
+
+  useEffect(() => {
+    if (open && selectedBranch?.genderPreference && selectedBranch.genderPreference !== "mixed") {
+      form.setFieldsValue({ gender: selectedBranch.genderPreference });
+    }
+  }, [open, selectedBranch, form]);
+
+  const getCustomerGenderOptions = () => {
+    if (selectedBranch?.genderPreference === "male") {
+      return <Option value="male">Laki-laki</Option>;
+    }
+    if (selectedBranch?.genderPreference === "female") {
+      return <Option value="female">Perempuan</Option>;
+    }
+    return (
+      <>
+        <Option value="male">Laki-laki</Option>
+        <Option value="female">Perempuan</Option>
+      </>
+    );
+  };
 
   const customUpload = async ({ file, onSuccess, onError }) => {
     try {
@@ -113,8 +134,7 @@ function AddCustomerModal({ open, onCancel, onSuccessCallback }) {
             rules={[{ required: true, message: "Pilih jenis kelamin" }]}
           >
             <Select placeholder="Pilih Jenis Kelamin">
-              <Option value="male">Laki-laki</Option>
-              <Option value="female">Perempuan</Option>
+              {getCustomerGenderOptions()}
             </Select>
           </Form.Item>
 

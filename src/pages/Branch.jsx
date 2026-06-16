@@ -1,8 +1,11 @@
-import { Button, message, Spin } from "antd";
+import { Button, message, Spin, Dropdown, Avatar } from "antd";
 import {
   PlusOutlined,
   LogoutOutlined,
   EditOutlined,
+  UserOutlined,
+  DownOutlined,
+  SettingOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -73,10 +76,45 @@ function Branch() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 relative">
+
+      {/* PROFILE DROPDOWN TOP RIGHT */}
+      <div className="absolute top-4 right-4 z-50">
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: "account",
+                icon: <SettingOutlined style={{ color: '#3b82f6' }} />,
+                label: "Account",
+                onClick: () => navigate("/account"),
+              },
+              {
+                type: "divider",
+              },
+              {
+                key: "logout",
+                icon: <LogoutOutlined />,
+                label: "Logout",
+                danger: true,
+                onClick: handleLogout,
+              },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <div className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1.5 rounded-full shadow hover:shadow-md transition">
+            <Avatar icon={<UserOutlined />} className="bg-blue-500" style={{ backgroundColor: "#1B59F8" }} />
+            <span className="font-semibold text-gray-700 hidden sm:inline">
+              {user?.ownerProfile?.name || user?.name || user?.email || "User"}
+            </span>
+            <DownOutlined className="text-gray-400 text-xs" />
+          </div>
+        </Dropdown>
+      </div>
 
       {/* TITLE */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 mt-12 sm:mt-0">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
           Pilih Cabang Kost
         </h1>
@@ -106,7 +144,9 @@ function Branch() {
           ) : branches.map((branch, index) => {
             const color = colors[index % colors.length];
             const total = branch.roomQuota || 0;
-            const occupied = branch.customers ? branch.customers.length : 0; // Simple approximation
+            const occupied = branch.rooms
+              ? branch.rooms.filter((room) => room.status === "filled").length
+              : 0;
 
             return (
               <div
@@ -167,19 +207,6 @@ function Branch() {
             </div>
           )}
 
-        </div>
-
-        {/* LOGOUT */}
-        <div className="flex justify-center">
-          <Button
-            type="primary"
-            danger
-            size="large"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
         </div>
       </div>
 

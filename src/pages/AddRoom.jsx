@@ -1,7 +1,7 @@
 import { Button, Input, Select, Form, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CloseOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import useAppStore from "../store/useAppStore";
 import api from "../services/api";
@@ -18,6 +18,28 @@ function AddRoom() {
     navigate("/branch");
     return null;
   }
+
+  useEffect(() => {
+    if (selectedBranch?.genderPreference && selectedBranch.genderPreference !== "mixed") {
+      form.setFieldsValue({ gender: selectedBranch.genderPreference });
+    }
+  }, [selectedBranch, form]);
+
+  const getRoomGenderOptions = () => {
+    if (selectedBranch?.genderPreference === "male") {
+      return <Select.Option value="male">Laki-laki (Putra)</Select.Option>;
+    }
+    if (selectedBranch?.genderPreference === "female") {
+      return <Select.Option value="female">Perempuan (Putri)</Select.Option>;
+    }
+    return (
+      <>
+        <Select.Option value="male">Laki-laki (Putra)</Select.Option>
+        <Select.Option value="female">Perempuan (Putri)</Select.Option>
+        <Select.Option value="mixed">Campur (Bebas)</Select.Option>
+      </>
+    );
+  };
 
   const handleSubmit = async (values) => {
     try {
@@ -79,15 +101,7 @@ function AddRoom() {
               rules={[{ required: true, message: "Pilih peruntukan gender kamar" }]}
             >
               <Select placeholder="Pilih Gender Kamar">
-                <Select.Option value="male">
-                  Laki-laki (Putra)
-                </Select.Option>
-                <Select.Option value="female">
-                  Perempuan (Putri)
-                </Select.Option>
-                <Select.Option value="mixed">
-                  Campur (Bebas)
-                </Select.Option>
+                {getRoomGenderOptions()}
               </Select>
             </Form.Item>
           </Form>

@@ -9,12 +9,17 @@ function Header({ title, username }) {
   const navigate = useNavigate();
   const clearUser = useAppStore((state) => state.clearUser);
   const selectedBranch = useAppStore((state) => state.selectedBranch);
+  const user = useAppStore((state) => state.user);
   const [hover, setHover] = useState(false);
+
+  const displayUsername = user?.ownerProfile?.name || user?.name || user?.email || username || "Admin";
 
   // Ambil inisial nama (MA)
   const getInitial = (name) => {
+    if (!name) return "";
     return name
       .split(" ")
+      .filter(Boolean)
       .map((n) => n[0])
       .join("")
       .toUpperCase();
@@ -50,6 +55,10 @@ function Header({ title, username }) {
   },
 ];
 
+  const occupiedCount = selectedBranch?.rooms
+    ? selectedBranch.rooms.filter((room) => room.status === "filled").length
+    : 0;
+
   return (
     <div className="flex justify-between items-center border-b-2 border-gray-200 pb-2 mb-4">
       {/* Kiri - Judul */}
@@ -58,7 +67,7 @@ function Header({ title, username }) {
         {title}
       </h1>
        <h1 className="text-sm sm:text-base md:text-xl lg:text-lg font-semibold truncate text-[#1B59F8]">
-        {selectedBranch ? `${selectedBranch.name} (${selectedBranch.customers?.length || 0}/` : "Pilih Cabang ("}
+        {selectedBranch ? `${selectedBranch.name} (${occupiedCount}/` : "Pilih Cabang ("}
         <span className='text-sm text-[#1B59F8]'>{selectedBranch ? selectedBranch.roomQuota : 0}</span>
         )
       </h1>
@@ -81,12 +90,12 @@ function Header({ title, username }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      {getInitial(username)}
+      {getInitial(displayUsername)}
     </Avatar>
   </Dropdown>
 
   <span className="hidden sm:inline text-xs sm:text-sm md:text-base">
-    {username}
+    {displayUsername}
   </span>
 </div>
     </div>

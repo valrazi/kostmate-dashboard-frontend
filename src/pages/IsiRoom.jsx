@@ -149,6 +149,29 @@ function IsiRoom() {
     }
   };
 
+  const handleUpdateNotes = async () => {
+    try {
+      if (!rentalId) return;
+      setLoading(true);
+      const updatedNotes = form.getFieldValue("notes");
+      
+      await api.patch(`/rentals/${rentalId}`, {
+        notes: updatedNotes
+      });
+      
+      message.success("Catatan sewa berhasil diperbarui");
+      navigate("/branch/room");
+    } catch (error) {
+      console.error(error);
+      const errorMessage = error.response?.data?.meta?.error?.message 
+        || error.response?.data?.message 
+        || "Gagal memperbarui catatan sewa";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-100 flex flex-col min-h-screen">
       <Header title="Isi Room" username={user?.ownerProfile?.name || user?.email} />
@@ -225,7 +248,7 @@ function IsiRoom() {
                   label="Tanggal Masuk"
                   rules={[{ required: true, message: "Tanggal masuk wajib diisi" }]}
                 >
-                  <Input type="date" className="w-full" />
+                  <Input type="date" className="w-full" disabled={isReadOnly} />
                 </Form.Item>
 
                 <Form.Item 
@@ -233,7 +256,7 @@ function IsiRoom() {
                   label="Sewa"
                   rules={[{ required: true, message: "Pilih paket sewa" }]}
                 >
-                  <Select placeholder="Masukan Sewa">
+                  <Select placeholder="Masukan Sewa" disabled={isReadOnly}>
                     <Select.Option value="daily">Harian</Select.Option>
                     <Select.Option value="weekly">Mingguan</Select.Option>
                     <Select.Option value="monthly">Bulanan</Select.Option>
@@ -255,6 +278,7 @@ function IsiRoom() {
                     filterOption={(input, option) =>
                       option.label.toLowerCase().includes(input.toLowerCase())
                     }
+                    disabled={isReadOnly}
                   />
                 </Form.Item>
 
@@ -268,6 +292,7 @@ function IsiRoom() {
                     addonBefore="Rp"
                     placeholder="Masukan Biaya Room"
                     className="w-full"
+                    disabled={isReadOnly}
                   />
                 </Form.Item>
 
@@ -285,12 +310,22 @@ function IsiRoom() {
             
             <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:justify-end">
               {isReadOnly && (
-                <Button
-                  className="w-full md:w-auto !bg-red-500 hover:!bg-red-600 !text-white !border-none"
-                  onClick={() => setOpenModal(true)}
-                >
-                  Hapus Customer
-                </Button>
+                <>
+                  <Button
+                    type="primary"
+                    loading={loading}
+                    className="w-full md:w-auto !bg-blue-600 hover:!bg-blue-700 !border-none"
+                    onClick={handleUpdateNotes}
+                  >
+                    Simpan Catatan
+                  </Button>
+                  <Button
+                    className="w-full md:w-auto !bg-red-500 hover:!bg-red-600 !text-white !border-none"
+                    onClick={() => setOpenModal(true)}
+                  >
+                    Hapus Customer
+                  </Button>
+                </>
               )}
 
               <Button

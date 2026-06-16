@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Layout, Menu, Button } from 'antd';
 import {
-  DashboardOutlined,
   UserOutlined,
   BranchesOutlined,
   CreditCardOutlined,
@@ -31,7 +30,7 @@ function Sidebar() {
   };
 
   const menuItems = [
-    { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/', icon: <BarChartOutlined />, label: 'Dashboard' },
     { key: '/users', icon: <UserOutlined />, label: 'Customer' },
     { key: '/branch/room', icon: <HomeOutlined />, label: 'Room' },
     { key: '/payment', icon: <CreditCardOutlined />, label: 'Payment' },
@@ -42,7 +41,6 @@ function Sidebar() {
         <div className="border-t border-gray-300"></div>
       </div>
     },
-    { key: '/report', icon: <BarChartOutlined />, label: 'Reports' },
     { key: '/account', icon: <SettingOutlined />, label: 'Account' },
   ];
 

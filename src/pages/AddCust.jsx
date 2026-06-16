@@ -1,7 +1,7 @@
 import { Button, Input, Upload, Select, Form, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CloseOutlined, UploadOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import useAppStore from "../store/useAppStore";
 import api from "../services/api";
@@ -20,6 +20,27 @@ function AddCust() {
     navigate("/branch");
     return null;
   }
+
+  useEffect(() => {
+    if (selectedBranch?.genderPreference && selectedBranch.genderPreference !== "mixed") {
+      form.setFieldsValue({ gender: selectedBranch.genderPreference });
+    }
+  }, [selectedBranch, form]);
+
+  const getCustomerGenderOptions = () => {
+    if (selectedBranch?.genderPreference === "male") {
+      return <Option value="male">Laki-laki</Option>;
+    }
+    if (selectedBranch?.genderPreference === "female") {
+      return <Option value="female">Perempuan</Option>;
+    }
+    return (
+      <>
+        <Option value="male">Laki-laki</Option>
+        <Option value="female">Perempuan</Option>
+      </>
+    );
+  };
 
   const customUpload = async ({ file, onSuccess, onError }) => {
     try {
@@ -58,8 +79,8 @@ function AddCust() {
       navigate("/users");
     } catch (error) {
       console.error(error);
-      const errorMessage = error.response?.data?.meta?.error?.message 
-        || error.response?.data?.message 
+      const errorMessage = error.response?.data?.meta?.error?.message
+        || error.response?.data?.message
         || "Gagal menambah customer";
       message.error(errorMessage);
     } finally {
@@ -73,7 +94,7 @@ function AddCust() {
 
       <div className="flex-1 flex justify-center items-start mt-6 md:mt-8 px-3 md:px-4">
         <div className="w-full md:w-4/5 lg:w-3/5 bg-white shadow-lg rounded-xl p-4 md:p-6 mb-10">
-          
+
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-2">
             <h2 className="text-md md:text-lg font-semibold">
               Tambah Customer
@@ -85,9 +106,9 @@ function AddCust() {
             />
           </div>
 
-          <Form 
-            form={form} 
-            layout="vertical" 
+          <Form
+            form={form}
+            layout="vertical"
             onFinish={handleSubmit}
             className="flex flex-col md:flex-row gap-6"
           >
@@ -107,8 +128,7 @@ function AddCust() {
                 rules={[{ required: true, message: "Pilih jenis kelamin" }]}
               >
                 <Select placeholder="Pilih Jenis Kelamin">
-                  <Option value="male">Laki-laki</Option>
-                  <Option value="female">Perempuan</Option>
+                  {getCustomerGenderOptions()}
                 </Select>
               </Form.Item>
 
@@ -144,7 +164,7 @@ function AddCust() {
                 label="Foto KTP"
                 rules={[{ required: true, message: "KTP wajib diunggah" }]}
               >
-                <Upload 
+                <Upload
                   customRequest={customUpload}
                   fileList={fileList}
                   onRemove={handleRemoveFile}

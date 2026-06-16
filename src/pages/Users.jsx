@@ -1,7 +1,7 @@
 // src/pages/Users.jsx
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Table, Tag, message } from 'antd';
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { Input, Button, Table, Tag, message, Modal, Descriptions } from 'antd';
+import { SearchOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
@@ -19,6 +19,9 @@ function Users() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [detailRecord, setDetailRecord] = useState(null);
 
   // Debounce logic
   useEffect(() => {
@@ -76,6 +79,11 @@ function Users() {
     }
   };
 
+  const handleDetailClick = (record) => {
+    setDetailRecord(record);
+    setIsDetailOpen(true);
+  };
+
   const columns = [
     // ✅ NO ROOM (SEBELUM NAMA)
     {
@@ -129,6 +137,16 @@ function Users() {
       align: "center",
       render: (_, record) => (
         <div className="flex justify-center gap-2">
+
+          {/* DETAIL */}
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            className="!border-gray-500 !text-gray-500 hover:!text-white hover:!bg-gray-500 hover:!border-gray-500"
+            onClick={() => handleDetailClick(record)}
+          >
+            Detail
+          </Button>
 
           {/* HAPUS */}
           <Button
@@ -218,6 +236,61 @@ function Users() {
         title="Anda Yakin Ingin Hapus Customer?"
         description="Customer yang kamu hapus tidak dapat dikembalikan. Apakah kamu yakin ingin melanjutkan?"
       />
+
+      {/* DETAIL MODAL */}
+      <Modal
+        title="Detail Customer"
+        open={isDetailOpen}
+        onCancel={() => {
+          setIsDetailOpen(false);
+          setDetailRecord(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setIsDetailOpen(false);
+            setDetailRecord(null);
+          }}>
+            Tutup
+          </Button>
+        ]}
+        width={600}
+      >
+        {detailRecord && (
+          <Descriptions bordered column={1} className="mt-4">
+            <Descriptions.Item label="Nama Customer">
+              {detailRecord.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Jenis Kelamin">
+              {detailRecord.gender === 'male' ? 'Laki-laki' : detailRecord.gender === 'female' ? 'Perempuan' : detailRecord.gender}
+            </Descriptions.Item>
+            <Descriptions.Item label="No WhatsApp">
+              {detailRecord.whatsappNumber || "-"}
+            </Descriptions.Item>
+            <Descriptions.Item label="No Darurat">
+              {detailRecord.emergencyPhoneNumber || "-"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Status Berkas">
+              <Tag color={detailRecord.identityUrl ? "green" : "red"}>
+                {detailRecord.identityUrl ? "Lengkap" : "Belum Lengkap"}
+              </Tag>
+            </Descriptions.Item>
+            {detailRecord.identityUrl && (
+              <Descriptions.Item label="Berkas Identitas">
+                <div className="mt-1 mb-2 border border-gray-200 rounded-lg overflow-hidden max-w-xs bg-gray-50 flex items-center justify-center p-1">
+                  <img 
+                    src={detailRecord.identityUrl} 
+                    alt="Berkas Identitas" 
+                    className="w-full h-auto max-h-64 object-contain rounded-md"
+                  />
+                </div>
+                <a href={detailRecord.identityUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-xs block">
+                  Buka Gambar di Tab Baru
+                </a>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        )}
+      </Modal>
     </div>
   );
 }
