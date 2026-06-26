@@ -24,6 +24,10 @@ function AddBranchModal({ open, onCancel, onSuccess }) {
         genderPreference: values.genderPreference,
         roomQuota: Number(values.roomQuota) || 0,
         ownerId: user?.ownerProfile?.id,
+        messageNotification: values.messageNotification,
+        bankName: values.bankName,
+        bankNumber: values.bankNumber,
+        bankBrand: values.bankBrand,
       };
 
       await api.post("/branches", payload);
@@ -107,6 +111,27 @@ function AddBranchModal({ open, onCancel, onSuccess }) {
           >
             <Input type="number" placeholder="Masukan total kuota ruangan" />
           </Form.Item>
+
+          <Form.Item
+            name="bankName"
+            label="Nama Bank"
+          >
+            <Input placeholder="Contoh: Bank Mandiri, Bank BCA" />
+          </Form.Item>
+
+          <Form.Item
+            name="bankNumber"
+            label="No. Rekening"
+          >
+            <Input placeholder="Masukan Nomor Rekening" />
+          </Form.Item>
+
+          <Form.Item
+            name="bankBrand"
+            label="Pemilik Bank / Bank Brand"
+          >
+            <Input placeholder="Contoh: Kostmate Corp" />
+          </Form.Item>
         </div>
 
         {/* KANAN */}
@@ -116,7 +141,14 @@ function AddBranchModal({ open, onCancel, onSuccess }) {
             label="Alamat Kost"
             rules={[{ required: true, message: "Alamat wajib diisi" }]}
           >
-            <Input.TextArea placeholder="Masukan Alamat Kost" rows={4} />
+            <Input.TextArea placeholder="Masukan Alamat Kost" rows={3} />
+          </Form.Item>
+
+          <Form.Item
+            name="messageNotification"
+            label="Format Pesan Notifikasi"
+          >
+            <Input.TextArea placeholder="Masukan Format Pesan WhatsApp Tagihan" rows={4} />
           </Form.Item>
           
           <Form.Item label="Foto Kost">

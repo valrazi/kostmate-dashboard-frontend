@@ -23,7 +23,11 @@ function EditBranchRoomModal({ open, onCancel, onSuccess, data }) {
         whatsappNumber: data.whatsappNumber,
         address: data.address,
         genderPreference: data.genderPreference || "mixed",
-        roomQuota: data.roomQuota || 0
+        roomQuota: data.roomQuota || 0,
+        messageNotification: data.messageNotification,
+        bankName: data.bankName,
+        bankNumber: data.bankNumber,
+        bankBrand: data.bankBrand,
       });
     }
   }, [open, data, form]);
@@ -36,7 +40,11 @@ function EditBranchRoomModal({ open, onCancel, onSuccess, data }) {
         whatsappNumber: values.whatsappNumber,
         address: values.address,
         genderPreference: values.genderPreference,
-        roomQuota: Number(values.roomQuota) || 0
+        roomQuota: Number(values.roomQuota) || 0,
+        messageNotification: values.messageNotification,
+        bankName: values.bankName,
+        bankNumber: values.bankNumber,
+        bankBrand: values.bankBrand,
       };
 
       await api.patch(`/branches/${data.id}`, payload);
@@ -117,6 +125,27 @@ function EditBranchRoomModal({ open, onCancel, onSuccess, data }) {
           >
             <Input type="number" placeholder="Masukan total kuota ruangan" />
           </Form.Item>
+
+          <Form.Item
+            name="bankName"
+            label="Nama Bank"
+          >
+            <Input placeholder="Contoh: Bank Mandiri, Bank BCA" />
+          </Form.Item>
+
+          <Form.Item
+            name="bankNumber"
+            label="No. Rekening"
+          >
+            <Input placeholder="Masukan Nomor Rekening" />
+          </Form.Item>
+
+          <Form.Item
+            name="bankBrand"
+            label="Pemilik Bank / Bank Brand"
+          >
+            <Input placeholder="Contoh: Kostmate Corp" />
+          </Form.Item>
         </div>
 
         {/* KANAN */}
@@ -125,7 +154,14 @@ function EditBranchRoomModal({ open, onCancel, onSuccess, data }) {
             name="address"
             label="Alamat Kost"
           >
-            <Input.TextArea placeholder="Masukan Alamat Kost" rows={4} />
+            <Input.TextArea placeholder="Masukan Alamat Kost" rows={3} />
+          </Form.Item>
+
+          <Form.Item
+            name="messageNotification"
+            label="Format Pesan Notifikasi"
+          >
+            <Input.TextArea placeholder="Masukan Format Pesan WhatsApp Tagihan" rows={4} />
           </Form.Item>
 
           <Form.Item label="Foto Kost">

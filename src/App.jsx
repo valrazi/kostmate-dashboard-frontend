@@ -20,6 +20,7 @@ import UploadPayment from './pages/UploadPayment'
 import Notifikasi from './pages/Notifikasi';
 import Report from './pages/Report';
 import Invoice from './pages/Invoice';
+import Maintenance from './pages/Maintenance';
 
 const { Content } = Layout;
 
@@ -70,6 +71,7 @@ function App() {
               <Route path="/payment/upload/:id" element={<ProtectedRoute element={<UploadPayment />} pathname="/payment/upload" />} />
               <Route path="/payment/invoice/:id" element={<ProtectedRoute element={<Invoice />} pathname="/payment/invoice" />} />
               <Route path="/notifikasi" element={<ProtectedRoute element={<Notifikasi />} pathname="/notifikasi" />} />
+              <Route path="/maintenance" element={<ProtectedRoute element={<Maintenance />} pathname="/maintenance" />} />
               <Route path="/report" element={<Navigate to="/" replace />} />
             </Routes>
           </Content>

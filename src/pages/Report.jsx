@@ -94,6 +94,8 @@ function Report() {
     const totalPendapatan = reportData.income.totalRevenue;
     const totalPending = reportData.income.totalPending;
     const totalBiaya = reportData.income.totalBiaya;
+    const totalMaintenance = reportData.income.totalMaintenance || 0;
+    const netProfit = totalPendapatan - totalMaintenance;
 
     const handleDownload = () => {
         try {
@@ -325,9 +327,10 @@ function Report() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip />
+                        <Tooltip formatter={(value) => formatRupiah(value)} />
                         <Legend />
                         <Bar dataKey="income" fill="#10b981" name="Pemasukan" />
+                        <Bar dataKey="expense" fill="#ef4444" name="Pengeluaran (Maintenance)" />
                     </BarChart>
                 </ResponsiveContainer>
             );
@@ -481,12 +484,12 @@ function Report() {
 
                 {activeTab === 'income' && (
                     <Row gutter={[12, 12]} className="mt-4 mb-4">
-                        <Col xs={24} md={8}>
+                        <Col xs={24} sm={12} md={6}>
                             <Card size="small" className="shadow-md" style={{ borderRadius: 15 }}>
                                 <div className="flex justify-between items-center p-1">
                                     <div>
                                         <Text className="text-gray-500 text-xs">Total Pendapatan</Text>
-                                        <Title level={4} style={{ margin: '4px 0 0 0' }}>{formatRupiah(totalPendapatan)}</Title>
+                                        <Title level={4} className="!text-green-600" style={{ margin: '4px 0 0 0' }}>{formatRupiah(totalPendapatan)}</Title>
                                     </div>
                                     <div className="p-3 bg-green-50 rounded-2xl flex items-center justify-center">
                                         <DollarOutlined style={{ fontSize: '20px', color: '#10b981' }} />
@@ -494,12 +497,12 @@ function Report() {
                                 </div>
                             </Card>
                         </Col>
-                        <Col xs={24} md={8}>
+                        <Col xs={24} sm={12} md={6}>
                             <Card size="small" className="shadow-md" style={{ borderRadius: 15 }}>
                                 <div className="flex justify-between items-center p-1">
                                     <div>
-                                        <Text className="text-gray-500 text-xs">Total Biaya</Text>
-                                        <Title level={4} style={{ margin: '4px 0 0 0' }}>{formatRupiah(totalBiaya)}</Title>
+                                        <Text className="text-gray-500 text-xs">Total Pengeluaran</Text>
+                                        <Title level={4} className="!text-red-500" style={{ margin: '4px 0 0 0' }}>{formatRupiah(totalMaintenance)}</Title>
                                     </div>
                                     <div className="p-3 bg-red-50 rounded-2xl flex items-center justify-center">
                                         <DollarOutlined style={{ fontSize: '20px', color: '#ef4444' }} />
@@ -507,7 +510,20 @@ function Report() {
                                 </div>
                             </Card>
                         </Col>
-                        <Col xs={24} md={8}>
+                        <Col xs={24} sm={12} md={6}>
+                            <Card size="small" className="shadow-md" style={{ borderRadius: 15 }}>
+                                <div className="flex justify-between items-center p-1">
+                                    <div>
+                                        <Text className="text-gray-500 text-xs">Keuntungan Bersih</Text>
+                                        <Title level={4} className={netProfit >= 0 ? "!text-blue-600" : "!text-red-500"} style={{ margin: '4px 0 0 0' }}>{formatRupiah(netProfit)}</Title>
+                                    </div>
+                                    <div className="p-3 bg-blue-50 rounded-2xl flex items-center justify-center">
+                                        <DollarOutlined style={{ fontSize: '20px', color: '#3b82f6' }} />
+                                    </div>
+                                </div>
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={12} md={6}>
                             <Card size="small" className="shadow-md" style={{ borderRadius: 15 }}>
                                 <div className="flex justify-between items-center p-1">
                                     <div>

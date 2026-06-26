@@ -11,7 +11,8 @@ import {
   HomeOutlined,
   RestOutlined,
   RightOutlined,
-  LeftOutlined
+  LeftOutlined,
+  ToolOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,6 +36,7 @@ function Sidebar() {
     { key: '/branch/room', icon: <HomeOutlined />, label: 'Room' },
     { key: '/payment', icon: <CreditCardOutlined />, label: 'Payment' },
     { key: '/notifikasi', icon: <BellOutlined />, label: 'Notification' },
+    { key: '/maintenance', icon: <ToolOutlined />, label: 'Maintenance' },
     {
       type: 'group',
       label: <div className="px-4">
